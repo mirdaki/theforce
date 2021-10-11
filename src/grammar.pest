@@ -1,14 +1,12 @@
 Program = _{ SOI ~ Main ~ EOI }
 
-Main = { BeginMain ~ Expr ~ EndMain }
-
-Expr = { Print ~ String }
+Main = { "Do it" ~ "The Sacred Texts!" ~ String ~ "May The Force be with you" }
 
 String  = @{ "\"" ~ Inner ~ "\"" }
 Inner   = @{ (!("\"" | "\\") ~ ANY)* ~ (Escape ~ Inner)? }
 Escape  = @{ "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t" ) }
 
-WHITESPACE = _{ " " | "\t" }
+WHITESPACE = _{ " " | "\t" | "\n" }
 
 BeginMain = _{ "Do it" }
 
