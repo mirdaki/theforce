@@ -1,0 +1,15 @@
+Program = _{ SOI ~ Main ~ EOI }
+
+Main = { "Do it" ~ "The Sacred Texts!" ~ String ~ "May The Force be with you" }
+
+String  = @{ "\"" ~ Inner ~ "\"" }
+Inner   = @{ (!("\"" | "\\") ~ ANY)* ~ (Escape ~ Inner)? }
+Escape  = @{ "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t" ) }
+
+WHITESPACE = _{ " " | "\t" | "\n" }
+
+BeginMain = _{ "Do it" }
+
+EndMain = _{ "May The Force be with you" }
+
+Print = _{ "The Sacred Texts!" }
