@@ -1,5 +1,9 @@
 # Design of the Force
 
+WIP
+
+## Keyword Mapping
+
 - False
     - Amazing, every word of what you just said is wrong
     - Oh, not good
@@ -59,9 +63,9 @@
 - DeclareMethod
     - What is thy bidding, my master
     - **This is where the fun begins**
-- NonVoidMethod
-    - All right that's pretty much nowhere
-- MethodArguments
+- NotVoidMethod
+    - It's a trap
+- MethodArgument
     - Now that’s a name I have not heard in a long time, a long time
 - Return
     - There is nothing for me here now
@@ -78,15 +82,15 @@
     - You saved me
     - As you wish
     - **Many Bothans died to bring us this information**
-- DeclareInt
+- DeclareFloat
     - Yoda, you seek Yoda
 - DeclareString
-    - 
+    - Size matters not
 - DeclareBool
     - I am the senate
 - SetInitialValue
     - The maker!
-    - Whoosa are youssa
+    - **Whoosa are youssa**
 - BeginMain
     - **Do it**
     - This is where the fun begins
@@ -96,10 +100,10 @@
     - Use the Force
     - What is meessa saying
     - **The Sacred Texts!**
-- ReadInteger
+- ReadFloat
     - Looking, found someone I would say you have
 - ReadString
-    - 
+    - Now this is pod racing
 - AssignVariable
     - What a piece of junk
 - SetValue
@@ -131,3 +135,61 @@ Thinhs we must use
 - I’ll try spinning, thats a good trick
 - Now this is pod racing
 - Size matters not
+
+## Example
+
+With out the keywords
+
+```force
+DeclareMethod name
+    # void
+EndMethodDeclaration
+
+DeclareMethod name
+    MethodArgument firstArg
+    MethodArgument secondArg
+    NonVoidMethod
+    
+    # Stuff
+    Return value
+EndMethodDeclaration
+
+BeginMain
+    DeclareFloat name
+    SetInitialValue value
+
+    AssignVariable name
+        SetValue firstOperand
+        + secondOperand
+        / thirdOperand
+    EndAssignVariable
+
+    AssignVariable name
+        SetValue firstOperand
+        or secondOperand
+    EndAssignVariable
+
+    AssignVariableFromMethodCall name
+        CallMethod name
+    EndAssignVariable
+
+    AssignVariableFromMethodCall name
+        CallMethod ReadString
+    EndAssignVariable
+    
+    If value
+        # Stuff
+    Else
+        # Stuff
+    EndIf
+
+    While value
+        # Stuff
+    EndWhile
+
+    For intValueExpre # Auto increments a value?
+        # Stuff
+    EndFor
+    
+EndMain
+```
