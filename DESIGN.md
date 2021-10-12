@@ -129,7 +129,7 @@ WIP
     - Amazing, every word of what you just said is wrong
     
 
-Thinhs we must use
+Things to consider
 - It's a trap
 - I am the senate
 - I’ll try spinning, thats a good trick

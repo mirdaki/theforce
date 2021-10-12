@@ -13,7 +13,7 @@ pub fn parse(source: &str) -> Result<Vec<Node>, pest::error::Error<Rule>> {
     let mut ast = vec![];
     let pairs = ForceParser::parse(Rule::Program, source)?;
     for pair in pairs {
-        if let Rule::Main = pair.as_rule() {
+        if let Rule::Root = pair.as_rule() {
             ast.push(build_ast(pair));
         }
     }
@@ -22,10 +22,15 @@ pub fn parse(source: &str) -> Result<Vec<Node>, pest::error::Error<Rule>> {
 
 fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
     match pair.as_rule() {
+        Rule::Root => {
+            let mut pair = pair.into_inner();
+            build_ast(pair.next().unwrap())
+        }
         Rule::Main => {
             let mut pair = pair.into_inner();
-            let string = pair.next().unwrap();
-            Node::Print(string.as_span().as_str().to_string())
+            let string = pair.next().unwrap().as_str();
+            // Remove parenthesis from string
+            Node::Print(string[1..string.len()-1].to_string())
         }
         unknown => panic!("Unknown expr: {:?}", unknown),
     }
@@ -46,9 +51,12 @@ mod tests {
         let hello_there = parse(source);
         assert!(hello_there.is_ok());
 
+        // Main
+        //  Function
+        //      Expression
         assert_eq!(
             hello_there.clone().unwrap(),
-            vec![Node::Print("\"Hello there\"".to_string())]
+            vec![Node::Print("Hello there".to_string())]
         );
     }
 }

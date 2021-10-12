@@ -1,20 +1,67 @@
-Program = _{ SOI ~ Method* ~ Main ~ EOI }
+Program = _{ SOI ~ Root ~ EOI }
+
+Root = { Method* ~ Main }
 
 Method = { VoidMethod | NonVoidMethod }
 
-VoidMethod = { DeclareMethod ~ MethodArgument* ~ Statment ~ EndMethodDeclaration }
+VoidMethod = {
+    DeclareMethod
+    ~ Arguments
+    ~ Statements
+    ~ EndMethodDeclaration
+}
 
-NonVoidMethod =  {DeclareMethod ~ MethodArgument* ~ NotVoidMethod  ~ Statment* ~ Return ~ EndMethodDeclaration }
+NonVoidMethod = {
+    DeclareMethod
+    ~ Arguments
+    ~ NotVoidMethod
+    ~ Statements
+    ~ ReturnStatement
+    ~ EndMethodDeclaration
+}
+
+Arguments = { (MethodArgument ~ Identifier)* }
 
 Main = { BeginMain ~ Print ~ String ~ EndMain }
 
-Statment = { "TEST" }
+Value = { Identifier }
+
+Statements = { Statement* ~ Statement }
+
+Statement = {
+    AssignStatement
+    | AssignFromMethodStatement
+    | PrintStatement
+}
+
+AssignStatement = {
+    AssignVariable ~ Identifier
+    ~ SetValue ~ Value
+    ~ Operator*
+    }
+
+AssignFromMethodStatement = {
+    AssignVariableFromMethodCall ~ Identifier
+    ~ CallMethod ~ Value
+    ~ Operator*
+}
+
+Operator = {
+    (Add ~ Value)
+    | (Sub ~ Value)
+}
+
+PrintStatement = { Print ~ Identifier }
+
+ReturnStatement = { Return ~ Identifier }
+
+Identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC)* }
 
 String  = @{ "\"" ~ Inner ~ "\"" }
 Inner   = @{ (!("\"" | "\\") ~ ANY)* ~ (Escape ~ Inner)? }
 Escape  = @{ "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t" ) }
 
-WHITESPACE = _{ " " | "\t" | "\n" }
+WHITESPACE = _{ " " | "\t" | NEWLINE }
 
 BeginMain = _{ "Do it" }
 EndMain = _{ "May The Force be with you" }
@@ -24,3 +71,13 @@ MethodArgument = _{ "Now that’s a name I have not heard in a long time, a long
 NotVoidMethod = _{ "It's a trap" }
 Return = _{ "You’re all clear kid, let's blow this thing and go home" }
 EndMethodDeclaration = _{ "It is clear to me the Republic no longer functions" }
+AssignVariable = _{ "AssignVariable" }
+AssignVariableFromMethodCall = _{ "AssignVariableFromMethodCall" }
+EndAssignVariable = _{ "EndAssignVariable" }
+SetValue = _{ "SetValue" }
+CallMethod = _{ "CallMethod" }
+If = _{ "If" }
+Else = _{ "Else" }
+EndIf = _{ "EndIf" }
+Add = _{ "Add" }
+Sub = _{ "Sub" }
