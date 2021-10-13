@@ -1,4 +1,6 @@
 #![allow(dead_code)] // Should disable eventually
+use std::fmt;
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Node {
@@ -13,7 +15,8 @@ pub enum Node {
     DeclareString(String, Box<Node>),
     Float(f32),
     If(Box<Node>, Vec<Node>, Vec<Node>),
-    Print(String),
+    Main(Vec<Node>),
+    Print(Box<Node>),
     Return(Box<Node>),
     String(String),
     Unary(UnaryOperation, Box<Node>),
@@ -40,4 +43,15 @@ pub enum BinaryOperation {
     LessThan,
     Or,
     And,
+}
+
+impl fmt::Display for Node {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        match &self {
+            Node::Float(n) => write!(f, "{}", n),
+            Node::String(s) => write!(f, "{}", s),
+            Node::Boolean(b) => write!(f, "{}", b),
+            _ => todo!()
+        }
+    }
 }

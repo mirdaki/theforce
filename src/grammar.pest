@@ -1,8 +1,8 @@
-Program = _{ SOI ~ Root ~ EOI }
+Program = _{ SOI ~ Methods ~ EOI }
 
-Root = { Method* ~ Main }
+Methods = { Method* }
 
-Method = { VoidMethod | NonVoidMethod }
+Method = { VoidMethod | NonVoidMethod | Main }
 
 VoidMethod = {
     DeclareMethod
@@ -22,7 +22,10 @@ NonVoidMethod = {
 
 Arguments = { (MethodArgument ~ Identifier)* }
 
-Main = { BeginMain ~ Print ~ String ~ EndMain }
+Main = { 
+    BeginMain 
+    ~ PrintStatement
+    ~ EndMain }
 
 Value = { Identifier }
 
@@ -51,7 +54,7 @@ Operator = {
     | (Sub ~ Value)
 }
 
-PrintStatement = { Print ~ Identifier }
+PrintStatement = { Print ~ (Identifier | String) }
 
 ReturnStatement = { Return ~ Identifier }
 

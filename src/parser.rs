@@ -13,24 +13,40 @@ pub fn parse(source: &str) -> Result<Vec<Node>, pest::error::Error<Rule>> {
     let mut ast = vec![];
     let pairs = ForceParser::parse(Rule::Program, source)?;
     for pair in pairs {
-        if let Rule::Root = pair.as_rule() {
-            ast.push(build_ast(pair));
+        if let Rule::Methods = pair.as_rule() {
+            for pair in pair.into_inner() {
+                ast.push(build_ast(pair));
+            }
         }
     }
     Ok(ast)
 }
 
 fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
+    // dbg!(&pair);
     match pair.as_rule() {
-        Rule::Root => {
+        Rule::Method => {
             let mut pair = pair.into_inner();
             build_ast(pair.next().unwrap())
         }
         Rule::Main => {
+            let pairs = pair.into_inner();
+            let mut statments = Vec::<Node>::new();
+            for pair in pairs.into_iter() {
+                statments.push(build_ast(pair));
+            }
+            Node::Main(statments)
+        },
+        Rule::PrintStatement =>
+        {
             let mut pair = pair.into_inner();
-            let string = pair.next().unwrap().as_str();
+            Node::Print(Box::new(build_ast(pair.next().unwrap())))
+        },
+        Rule::String =>
+        {
+            let string = pair.as_str();
             // Remove parenthesis from string
-            Node::Print(string[1..string.len()-1].to_string())
+            Node::String(string[1..string.len()-1].to_string())
         }
         unknown => panic!("Unknown expr: {:?}", unknown),
     }
@@ -40,7 +56,6 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
 mod tests {
     use super::*;
     
-    // Parser tests
     #[test]
     fn hello_there() {
         let source = r#"
@@ -48,15 +63,16 @@ mod tests {
             The Sacred Texts! "Hello there"
         May The Force be with you
         "#;
-        let hello_there = parse(source);
-        assert!(hello_there.is_ok());
+        let ast = parse(source);
+        assert!(ast.is_ok());
 
-        // Main
-        //  Function
-        //      Expression
         assert_eq!(
-            hello_there.clone().unwrap(),
-            vec![Node::Print("Hello there".to_string())]
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                    Node::Print(Box::new(
+                        Node::String("Hello there".to_string())
+                ))))
+            ]
         );
     }
 }
