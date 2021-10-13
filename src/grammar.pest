@@ -27,15 +27,22 @@ Main = {
     ~ PrintStatement
     ~ EndMain }
 
-Value = { Identifier }
-
 Statements = { Statement* ~ Statement }
 
 Statement = {
-    AssignStatement
+    DeclareStatement
+    | AssignStatement
     | AssignFromMethodStatement
     | PrintStatement
+    | Noop
 }
+
+DeclareStatement = {
+    DeclareType ~ Identifier
+    ~ SetInitalValue ~ Value
+}
+
+DeclareType = { DeclareFloat | DeclareString | DeclareBool }
 
 AssignStatement = {
     AssignVariable ~ Identifier
@@ -49,16 +56,34 @@ AssignFromMethodStatement = {
     ~ Operator*
 }
 
-Operator = {
+Operator = { UnaryOperator | BinaryOperator }
+
+UnaryOperator = { Not }
+
+BinaryOperator = {
     (Add ~ Value)
-    | (Sub ~ Value)
+    | (Subtract ~ Value)
+    | (Divide ~ Value)
+    | (Exponent ~ Value)
+    | (Modulus ~ Value)
+    | (Equal ~ Value)
+    | (GreaterThan ~ Value)
+    | (LessThan ~ Value)
+    | (Or ~ Value)
+    | (And ~ Value)
 }
 
-PrintStatement = { Print ~ (Identifier | String) }
+PrintStatement = { Print ~ Value }
 
-ReturnStatement = { Return ~ Identifier }
+ReturnStatement = { Return ~ Value }
+
+Value = { Identifier | String | Float | Boolean }
 
 Identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC)* }
+
+Float = @{ "-"? ~ ASCII_DIGIT+  ~ "."? ~ ASCII_DIGIT* }
+
+Boolean = @{ True | False }
 
 String  = @{ "\"" ~ Inner ~ "\"" }
 Inner   = @{ (!("\"" | "\\") ~ ANY)* ~ (Escape ~ Inner)? }
@@ -66,21 +91,38 @@ Escape  = @{ "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t" ) }
 
 WHITESPACE = _{ " " | "\t" | NEWLINE }
 
-BeginMain = _{ "Do it" }
-EndMain = _{ "May The Force be with you" }
+BeginMain = _{ "Do it!" }
+EndMain = _{ "May The Force be with you." }
 Print = _{ "The Sacred Texts!" }
-DeclareMethod = _{ "This is where the fun begins" }
-MethodArgument = _{ "Now that’s a name I have not heard in a long time, a long time" }
-NotVoidMethod = _{ "It's a trap" }
-Return = _{ "You’re all clear kid, let's blow this thing and go home" }
-EndMethodDeclaration = _{ "It is clear to me the Republic no longer functions" }
-AssignVariable = _{ "AssignVariable" }
-AssignVariableFromMethodCall = _{ "AssignVariableFromMethodCall" }
-EndAssignVariable = _{ "EndAssignVariable" }
-SetValue = _{ "SetValue" }
-CallMethod = _{ "CallMethod" }
-If = _{ "If" }
-Else = _{ "Else" }
-EndIf = _{ "EndIf" }
-Add = _{ "Add" }
-Sub = _{ "Sub" }
+DeclareMethod = _{ "This is where the fun begins." }
+MethodArgument = _{ "Now that’s a name I have not heard in a long time, a long time." }
+NotVoidMethod = _{ "It's a trap!" }
+Return = _{ "You’re all clear kid, let's blow this thing and go home." }
+EndMethodDeclaration = _{ "It is clear to me the Republic no longer functions." }
+AssignVariable = _{ "What a piece of junk!" }
+AssignVariableFromMethodCall = _{ "Many Bothans died to bring us this information." }
+EndAssignVariable = _{ "The garbage will do." }
+SetValue = _{ "I am your father." }
+CallMethod = _{ "I have a bad feeling about this." }
+If = _{ "Do or do not." }
+Else = _{ "These aren’t the droids you’re looking for." }
+EndIf = _{ "You have failed me for the last time." }
+Not = { "Always with you what cannot be done." }
+Add = _{ "This will make a fine addition to my collection." }
+Subtract = _{ "Proceed with the countdown." }
+Multiply = _{ "There's too many of them!" }
+Divide = _{ "Not to worry, at least we are flying half a ship." }
+Exponent = _{ "Unlimited power!" }
+Modulus = _{ "Never tell me the odds!" }
+Equal = _{ "You're a Jedi too, nice to meet you." }
+GreaterThan = _{ "There is always a bigger fish." }
+LessThan = _{ "Impressive. Most impressive." }
+Or = _{ "As you wish." }
+And = _{ "There is another." }
+DeclareFloat = _{ "Yoda, you seek Yoda." }
+DeclareString = _{ "Size matters not." }
+DeclareBool = _{ "I am the senate!" }
+SetInitalValue = _{ "Whoosa are youssa?" }
+True = _{ "From a certain point of view." }
+False = _{ "No, that's not true. That's impossible!" }
+Noop = _{ "Move along. Move along." }

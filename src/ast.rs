@@ -1,6 +1,5 @@
-#![allow(dead_code)] // Should disable eventually
+#![allow(dead_code)] // TODO: Should disable eventually
 use std::fmt;
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Node {
@@ -51,7 +50,7 @@ impl fmt::Display for Node {
             Node::Float(n) => write!(f, "{}", n),
             Node::String(s) => write!(f, "{}", s),
             Node::Boolean(b) => write!(f, "{}", b),
-            _ => todo!()
+            _ => unreachable!()
         }
     }
 }

@@ -12,12 +12,12 @@ WIP
     - We don’t serve there kind here
     - That’s no moon
 - True
-    - What I told you was true from **a certain point of view**
+    - What I told you was true **from a certain point of view**
     - Help me Obi-Wan Kenobi, you’re my only hope
     - Search you feelings lord Vader, you know it to be true
 - If
     - Try not. Do or do not. There is no try.
-    - **Do or do not.**
+    - **Do or do not**
 - Else
     - These aren’t the droids you’re looking for
 - EndIf
@@ -53,7 +53,7 @@ WIP
 - <
     - Impressive. Most impressive
 - Or
-    - Never tell me the odds
+    - As you wish
 - And
     - There is another
 - Not
@@ -77,10 +77,9 @@ WIP
     - You know what you need to do
 - CallMethod
     - I have a bad feeling about this
-    - **I hope you know what you’re doing**
+    - I hope you know what you’re doing
 - AssignVariableFromMethodCall
     - You saved me
-    - As you wish
     - **Many Bothans died to bring us this information**
 - DeclareFloat
     - Yoda, you seek Yoda
@@ -130,11 +129,8 @@ WIP
     
 
 Things to consider
-- It's a trap
-- I am the senate
 - I’ll try spinning, thats a good trick
-- Now this is pod racing
-- Size matters not
+
 
 ## Example
 
