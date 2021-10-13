@@ -36,6 +36,7 @@ Statement = _{
     | AssignStatement
     | AssignFromMethodStatement
     | PrintStatement
+    | WhileStatement
     | Noop
 }
 
@@ -68,9 +69,21 @@ AssignFromMethodStatement = {
     ~ EndAssignVariable
 }
 
+PrintStatement = { Print ~ Value }
+
+WhileStatement = { 
+    While ~ Value
+    ~ Statements
+    ~ EndWhile
+}
+
+ReturnStatement = { Return ~ Value }
+
 Operator = _{ UnaryOperator | BinaryOperator }
 
-UnaryOperator = { Not }
+UnaryOperator = _{ NotOperator }
+
+NotOperator = { Not }
 
 BinaryOperator = _{
     AddOperator
@@ -98,10 +111,6 @@ LessThanOperator = { LessThan ~ Value }
 OrOperator = { Or ~ Value }
 AndOperator = { And ~ Value }
 
-PrintStatement = { Print ~ Value }
-
-ReturnStatement = { Return ~ Value }
-
 Value = _{ VariableName | String | Float | Boolean }
 
 VariableName = { Identifier }
@@ -110,7 +119,7 @@ MethodName = { Identifier }
 
 Identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC)* }
 
-Float = @{ "-"? ~ ASCII_DIGIT+  ~ "."? ~ ASCII_DIGIT* }
+Float = @{ "-"? ~ ASCII_DIGIT+  ~ ("." ~ ASCII_DIGIT+)? }
 
 Boolean = { True | False }
 
@@ -156,3 +165,5 @@ DeclareString = _{ "Size matters not." }
 DeclareBool = _{ "I am the senate!" }
 SetInitalValue = _{ "Whoosa are youssa?" }
 Noop = _{ "Move along. Move along." }
+While = _ { "Here we go again." }
+EndWhile = _ { "Let the past die." }

@@ -65,6 +65,18 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let mut pair = pair.into_inner();
             Node::Print(Box::new(build_ast(pair.next().unwrap())))
         }
+        Rule::WhileStatement => {
+            let mut pairs = pair.into_inner();
+            let value = build_ast(pairs.next().unwrap());
+            let mut statments = Vec::<Node>::new();
+            for pair in pairs.into_iter() {
+                statments.push(build_ast(pair));
+            }
+            Node::While(Box::new(value), statments)
+        }
+        Rule::NotOperator => {
+            Node::Unary(UnaryOperation::Not)
+        }
         Rule::AddOperator => {
             let mut pair = pair.into_inner();
             Node::Binary(BinaryOperation::Add, Box::new(build_ast(pair.next().unwrap())))
@@ -341,10 +353,115 @@ mod tests {
 
     #[test]
     fn logic() {
+        let source = r#"
+        Do it!
+            I am the senate! lightside
+            Whoosa are youssa? From a certain point of view.
+
+            I am the senate! darkside
+            Whoosa are youssa? No, that's not true. That's impossible!
+
+            I am the senate! revan
+            Whoosa are youssa? No, that's not true. That's impossible!
+
+            What a piece of junk! revan
+                I am your father. lightside
+                As you wish. darkside
+            The garbage will do.
+
+            What a piece of junk! revan
+                I am your father. revan
+                There is another. lightside
+            The garbage will do.
+
+            What a piece of junk! revan
+                I am your father. revan
+                Always with you what cannot be done.
+            The garbage will do.
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                    Node::DeclareBoolean(
+                        "lightside".to_string(),
+                        Box::new(Node::Boolean(true))),
+
+                    Node::DeclareBoolean(
+                        "darkside".to_string(),
+                        Box::new(Node::Boolean(false))),
+
+                    Node::DeclareBoolean(
+                        "revan".to_string(),
+                        Box::new(Node::Boolean(false))),
+
+
+                    Node::AssignVariable(
+                        "revan".to_string(),
+                        Box::new(Node::Variable("lightside".to_string())),
+                        vec!(
+                            Node::Binary(BinaryOperation::Or, Box::new(Node::Variable("darkside".to_string()))),
+                        )),
+
+                    Node::AssignVariable(
+                        "revan".to_string(),
+                        Box::new(Node::Variable("revan".to_string())),
+                        vec!(
+                            Node::Binary(BinaryOperation::And, Box::new(Node::Variable("lightside".to_string()))),
+                        )),
+
+                    Node::AssignVariable(
+                        "revan".to_string(),
+                        Box::new(Node::Variable("revan".to_string())),
+                        vec!(
+                            Node::Unary(UnaryOperation::Not),
+                        )),
+                ))
+            ]
+        );
     }
 
     #[test]
     fn while_loop() {
+        let source = r#"
+        Do it!
+            Yoda, you seek Yoda. deathStars
+            Whoosa are youssa? 3
+
+            Here we go again. deathStars
+                What a piece of junk! deathStars
+                    I am your father. deathStars
+                    Proceed with the countdown. 1
+                The garbage will do.
+            Let the past die.
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                    Node::DeclareFloat(
+                        "deathStars".to_string(),
+                        Box::new(Node::Float(3.0))),
+
+                    Node::While(
+                        Box::new(Node::Variable("deathStars".to_string())),
+                        vec!(Node::AssignVariable(
+                            "deathStars".to_string(),
+                            Box::new(Node::Variable("deathStars".to_string())),
+                            vec!(
+                                Node::Binary(BinaryOperation::Subtract, Box::new(Node::Float(1.0))),
+                            ))
+                        ),
+                    )
+                ))
+            ]
+        );
     }
 
     #[test]
@@ -357,6 +474,14 @@ mod tests {
 
     #[test]
     fn input() {
+    }
+
+    #[test]
+    fn other() {
+        // Empty main
+        // Noop
+        // Nothing at all
+
     }
 
     #[test]
