@@ -24,25 +24,35 @@ Arguments = { (MethodArgument ~ Identifier)* }
 
 Main = { 
     BeginMain 
-    ~ PrintStatement
+    ~ Statements
     ~ EndMain }
 
-Statements = { Statement* ~ Statement }
+Statements = _{ Statement* }
 
-Statement = {
-    DeclareStatement
+Statement = _{
+    DeclareBooleanStatement
+    | DeclareFloatStatement
+    | DeclareStringStatement
     | AssignStatement
     | AssignFromMethodStatement
     | PrintStatement
     | Noop
 }
 
-DeclareStatement = {
-    DeclareType ~ Identifier
-    ~ SetInitalValue ~ Value
+DeclareBooleanStatement = {
+    DeclareBool ~ Identifier
+    ~ SetInitalValue ~ (Boolean | Identifier)
 }
 
-DeclareType = { DeclareFloat | DeclareString | DeclareBool }
+DeclareFloatStatement = {
+    DeclareFloat ~ Identifier
+    ~ SetInitalValue ~ (Float | Identifier)
+}
+
+DeclareStringStatement = {
+    DeclareString ~ Identifier
+    ~ SetInitalValue ~ (String | Identifier)
+}
 
 AssignStatement = {
     AssignVariable ~ Identifier
@@ -83,7 +93,10 @@ Identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC)* }
 
 Float = @{ "-"? ~ ASCII_DIGIT+  ~ "."? ~ ASCII_DIGIT* }
 
-Boolean = @{ True | False }
+Boolean = { True | False }
+
+True = { "From a certain point of view." }
+False = { "No, that's not true. That's impossible!" }
 
 String  = @{ "\"" ~ Inner ~ "\"" }
 Inner   = @{ (!("\"" | "\\") ~ ANY)* ~ (Escape ~ Inner)? }
@@ -123,6 +136,4 @@ DeclareFloat = _{ "Yoda, you seek Yoda." }
 DeclareString = _{ "Size matters not." }
 DeclareBool = _{ "I am the senate!" }
 SetInitalValue = _{ "Whoosa are youssa?" }
-True = _{ "From a certain point of view." }
-False = _{ "No, that's not true. That's impossible!" }
 Noop = _{ "Move along. Move along." }

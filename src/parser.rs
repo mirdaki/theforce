@@ -23,7 +23,7 @@ pub fn parse(source: &str) -> Result<Vec<Node>, pest::error::Error<Rule>> {
 }
 
 fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
-    // dbg!(&pair);
+    dbg!(&pair);
     match pair.as_rule() {
         Rule::Method => {
             let mut pair = pair.into_inner();
@@ -36,14 +36,42 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
                 statments.push(build_ast(pair));
             }
             Node::Main(statments)
-        },
+        }
+        Rule::DeclareBooleanStatement => {
+            let mut pair = pair.into_inner();
+            let identifier = pair.next().unwrap().as_str();
+            let value = build_ast(pair.next().unwrap());
+            Node::DeclareBoolean(identifier.to_string(), Box::new(value))
+        }
+        Rule::DeclareFloatStatement => {
+            let mut pair = pair.into_inner();
+            let identifier = pair.next().unwrap().as_str();
+            let value = build_ast(pair.next().unwrap());
+            Node::DeclareFloat(identifier.to_string(), Box::new(value))
+        }
+        Rule::DeclareStringStatement => {
+            let mut pair = pair.into_inner();
+            let identifier = pair.next().unwrap().as_str();
+            let value = build_ast(pair.next().unwrap());
+            Node::DeclareString(identifier.to_string(), Box::new(value))
+        }
         Rule::PrintStatement => {
             let mut pair = pair.into_inner();
             Node::Print(Box::new(build_ast(pair.next().unwrap())))
-        },
+        }
         Rule::Value => {
             let mut pair = pair.into_inner();
             build_ast(pair.next().unwrap())
+        }
+        Rule::Boolean => {
+            let pair = pair.into_inner().next().unwrap();
+            let bool = pair.as_rule() == Rule::True;
+            Node::Boolean(bool)
+        }
+        Rule::Float => {
+            let float = pair.as_str();
+            let float = float.parse::<f32>().unwrap();
+            Node::Float(float)
         }
         Rule::String => {
             let string = pair.as_str();
@@ -71,28 +99,91 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![Node::Main(vec!(
-                    Node::Print(Box::new(
-                        Node::String("Hello there".to_string())
-                ))))
+                    Node::Print(
+                        Box::new(Node::String("Hello there".to_string()))
+                )))
             ]
         );
     }
     
-    // TODO: Fill out
     #[test]
     fn variable() {
         let source = r#"
         Do it!
             Yoda, you seek Yoda. porg
-            Whoosa are youssa? 42
+            Whoosa are youssa? -13.2
         May The Force be with you.
         "#;
         let ast = parse(source);
         assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                    Node::DeclareFloat(
+                        "porg".to_string(),
+                        Box::new(Node::Float(-13.2))
+                )))
+            ]
+        );
+
+        let source = r#"
+        Do it!
+            Size matters not. ewok
+            Whoosa are youssa? "Nub Nub"
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                    Node::DeclareString(
+                        "ewok".to_string(),
+                        Box::new(Node::String("Nub Nub".to_string()))
+                )))
+            ]
+        );
+
+        let source = r#"
+        Do it!
+            I am the senate! darkSide
+            Whoosa are youssa? From a certain point of view.
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                    Node::DeclareBoolean(
+                        "darkSide".to_string(),
+                        Box::new(Node::Boolean(true))
+                )))
+            ]
+        );
     }
 
     #[test]
     fn math() {
+        let source = r#"
+        Do it!
+            The Sacred Texts! "Hello there"
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                    Node::Print(
+                        Box::new(Node::String("Hello there".to_string()))
+                )))
+            ]
+        );
     }
 
     #[test]
