@@ -4,8 +4,8 @@ use std::fmt;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Node {
     // For,
-    AssignVariable(String, Vec<Node>),
-    Binary(BinaryOperation, Box<Node>, Box<Node>),
+    AssignVariable(String, Box<Node>, Vec<Node>),
+    Binary(BinaryOperation, Box<Node>),
     Boolean(bool),
     CallFunction(String, Vec<Node>),
     DeclareBoolean(String, Box<Node>),
@@ -18,7 +18,7 @@ pub enum Node {
     Print(Box<Node>),
     Return(Box<Node>),
     String(String),
-    Unary(UnaryOperation, Box<Node>),
+    Unary(UnaryOperation),
     Variable(String),
     While(Box<Node>, Vec<Node>),
     Noop,

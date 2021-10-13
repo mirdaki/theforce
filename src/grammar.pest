@@ -2,7 +2,7 @@ Program = _{ SOI ~ Methods ~ EOI }
 
 Methods = { Method* }
 
-Method = { VoidMethod | NonVoidMethod | Main }
+Method = _{ VoidMethod | NonVoidMethod | Main }
 
 VoidMethod = {
     DeclareMethod
@@ -20,7 +20,7 @@ NonVoidMethod = {
     ~ EndMethodDeclaration
 }
 
-Arguments = { (MethodArgument ~ Identifier)* }
+Arguments = { (MethodArgument ~ VariableName)* }
 
 Main = { 
     BeginMain 
@@ -40,54 +40,73 @@ Statement = _{
 }
 
 DeclareBooleanStatement = {
-    DeclareBool ~ Identifier
-    ~ SetInitalValue ~ (Boolean | Identifier)
+    DeclareBool ~ VariableName
+    ~ SetInitalValue ~ (Boolean | VariableName)
 }
 
 DeclareFloatStatement = {
-    DeclareFloat ~ Identifier
-    ~ SetInitalValue ~ (Float | Identifier)
+    DeclareFloat ~ VariableName
+    ~ SetInitalValue ~ (Float | VariableName)
 }
 
 DeclareStringStatement = {
-    DeclareString ~ Identifier
-    ~ SetInitalValue ~ (String | Identifier)
+    DeclareString ~ VariableName
+    ~ SetInitalValue ~ (String | VariableName)
 }
 
 AssignStatement = {
-    AssignVariable ~ Identifier
+    AssignVariable ~ VariableName
     ~ SetValue ~ Value
     ~ Operator*
+    ~ EndAssignVariable
     }
 
 AssignFromMethodStatement = {
-    AssignVariableFromMethodCall ~ Identifier
+    AssignVariableFromMethodCall ~ VariableName
     ~ CallMethod ~ Value
     ~ Operator*
+    ~ EndAssignVariable
 }
 
-Operator = { UnaryOperator | BinaryOperator }
+Operator = _{ UnaryOperator | BinaryOperator }
 
 UnaryOperator = { Not }
 
-BinaryOperator = {
-    (Add ~ Value)
-    | (Subtract ~ Value)
-    | (Divide ~ Value)
-    | (Exponent ~ Value)
-    | (Modulus ~ Value)
-    | (Equal ~ Value)
-    | (GreaterThan ~ Value)
-    | (LessThan ~ Value)
-    | (Or ~ Value)
-    | (And ~ Value)
+BinaryOperator = _{
+    AddOperator
+    | SubtractOperator
+    | MultiplyOperator
+    | DivideOperator
+    | ExponentOperator
+    | ModulusOperator
+    | EqualOperator
+    | GreaterThanOperator
+    | LessThanOperator
+    | OrOperator
+    | AndOperator
 }
+
+AddOperator = { Add ~ Value }
+SubtractOperator = { Subtract ~ Value }
+MultiplyOperator = { Multiply ~ Value }
+DivideOperator = { Divide ~ Value }
+ExponentOperator = { Exponent ~ Value }
+ModulusOperator = { Modulus ~ Value }
+EqualOperator = { Equal ~ Value }
+GreaterThanOperator = { GreaterThan ~ Value }
+LessThanOperator = { LessThan ~ Value }
+OrOperator = { Or ~ Value }
+AndOperator = { And ~ Value }
 
 PrintStatement = { Print ~ Value }
 
 ReturnStatement = { Return ~ Value }
 
-Value = { Identifier | String | Float | Boolean }
+Value = _{ VariableName | String | Float | Boolean }
+
+VariableName = { Identifier }
+
+MethodName = { Identifier }
 
 Identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC)* }
 

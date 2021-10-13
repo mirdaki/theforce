@@ -3,7 +3,7 @@ extern crate pest_derive;
 
 use pest::Parser;
 
-use crate::ast::Node;
+use crate::ast::{Node, UnaryOperation, BinaryOperation};
 
 #[derive(pest_derive::Parser)]
 #[grammar = "grammar.pest"]
@@ -25,10 +25,6 @@ pub fn parse(source: &str) -> Result<Vec<Node>, pest::error::Error<Rule>> {
 fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
     dbg!(&pair);
     match pair.as_rule() {
-        Rule::Method => {
-            let mut pair = pair.into_inner();
-            build_ast(pair.next().unwrap())
-        }
         Rule::Main => {
             let pairs = pair.into_inner();
             let mut statments = Vec::<Node>::new();
@@ -36,6 +32,16 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
                 statments.push(build_ast(pair));
             }
             Node::Main(statments)
+        }
+        Rule::AssignStatement => {
+            let mut pairs = pair.into_inner();
+            let identfier = pairs.next().unwrap().as_str();
+            let value = build_ast(pairs.next().unwrap());
+            let mut operations = Vec::<Node>::new();
+            for pair in pairs.into_iter() {
+                operations.push(build_ast(pair));
+            }
+            Node::AssignVariable(identfier.to_string(), Box::new(value), operations)
         }
         Rule::DeclareBooleanStatement => {
             let mut pair = pair.into_inner();
@@ -59,9 +65,49 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let mut pair = pair.into_inner();
             Node::Print(Box::new(build_ast(pair.next().unwrap())))
         }
-        Rule::Value => {
+        Rule::AddOperator => {
             let mut pair = pair.into_inner();
-            build_ast(pair.next().unwrap())
+            Node::Binary(BinaryOperation::Add, Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::SubtractOperator => {
+            let mut pair = pair.into_inner();
+            Node::Binary(BinaryOperation::Subtract, Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::MultiplyOperator => {
+            let mut pair = pair.into_inner();
+            Node::Binary(BinaryOperation::Multiply, Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::DivideOperator => {
+            let mut pair = pair.into_inner();
+            Node::Binary(BinaryOperation::Divide, Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::ExponentOperator => {
+            let mut pair = pair.into_inner();
+            Node::Binary(BinaryOperation::Exponent, Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::ModulusOperator => {
+            let mut pair = pair.into_inner();
+            Node::Binary(BinaryOperation::Modulus, Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::EqualOperator => {
+            let mut pair = pair.into_inner();
+            Node::Binary(BinaryOperation::Equal, Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::GreaterThanOperator => {
+            let mut pair = pair.into_inner();
+            Node::Binary(BinaryOperation::GreaterThan, Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::LessThanOperator => {
+            let mut pair = pair.into_inner();
+            Node::Binary(BinaryOperation::LessThan, Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::OrOperator => {
+            let mut pair = pair.into_inner();
+            Node::Binary(BinaryOperation::Or, Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::AndOperator => {
+            let mut pair = pair.into_inner();
+            Node::Binary(BinaryOperation::And, Box::new(build_ast(pair.next().unwrap())))
         }
         Rule::Boolean => {
             let pair = pair.into_inner().next().unwrap();
@@ -77,6 +123,10 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let string = pair.as_str();
             // Remove parenthesis from string
             Node::String(string[1..string.len()-1].to_string())
+        },
+        Rule::VariableName => {
+            let name = pair.as_str();
+            Node::Variable(name.to_string())
         }
         unknown => panic!("Unknown expr: {:?}", unknown),
     }
@@ -110,7 +160,7 @@ mod tests {
     fn variable() {
         let source = r#"
         Do it!
-            Yoda, you seek Yoda. porg
+            Yoda, you seek Yoda. jawa
             Whoosa are youssa? -13.2
         May The Force be with you.
         "#;
@@ -121,7 +171,7 @@ mod tests {
             ast.unwrap(),
             vec![Node::Main(vec!(
                     Node::DeclareFloat(
-                        "porg".to_string(),
+                        "jawa".to_string(),
                         Box::new(Node::Float(-13.2))
                 )))
             ]
@@ -170,7 +220,18 @@ mod tests {
     fn math() {
         let source = r#"
         Do it!
-            The Sacred Texts! "Hello there"
+            Yoda, you seek Yoda. porg
+            Whoosa are youssa? 4
+
+            What a piece of junk! porg
+                I am your father. porg
+                This will make a fine addition to my collection. 2.0
+                Proceed with the countdown. 1
+                There's too many of them! 3
+                Not to worry, at least we are flying half a ship. 5
+                Unlimited power! 2
+                Never tell me the odds! 10
+            The garbage will do.
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -179,8 +240,21 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![Node::Main(vec!(
-                    Node::Print(
-                        Box::new(Node::String("Hello there".to_string()))
+                    Node::DeclareFloat(
+                        "porg".to_string(),
+                        Box::new(Node::Float(4.0))),
+
+                    Node::AssignVariable(
+                        "porg".to_string(),
+                        Box::new(Node::Variable("porg".to_string())),
+                        vec!(
+                            Node::Binary(BinaryOperation::Add, Box::new(Node::Float(2.0))),
+                            Node::Binary(BinaryOperation::Subtract, Box::new(Node::Float(1.0))),
+                            Node::Binary(BinaryOperation::Multiply, Box::new(Node::Float(3.0))),
+                            Node::Binary(BinaryOperation::Divide, Box::new(Node::Float(5.0))),
+                            Node::Binary(BinaryOperation::Exponent, Box::new(Node::Float(2.0))),
+                            Node::Binary(BinaryOperation::Modulus, Box::new(Node::Float(10.0))),
+                        )
                 )))
             ]
         );
