@@ -261,6 +261,85 @@ mod tests {
     }
 
     #[test]
+    fn equality() {
+        let source = r#"
+        Do it!
+            Yoda, you seek Yoda. anakin
+            Whoosa are youssa? 27700
+
+            Yoda, you seek Yoda. luke
+            Whoosa are youssa? 14500
+
+            Yoda, you seek Yoda. leia
+            Whoosa are youssa? 14500
+
+            I am the senate! midichlorian
+            Whoosa are youssa? No, that's not true. That's impossible!
+
+            What a piece of junk! midichlorian
+                I am your father. luke
+                There is always a bigger fish. anakin
+            The garbage will do.
+
+            What a piece of junk! midichlorian
+                I am your father. anakin
+                Impressive. Most impressive. leia
+            The garbage will do.
+
+            What a piece of junk! midichlorian
+                I am your father. leia
+                You're a Jedi too, nice to meet you. luke
+            The garbage will do.
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                    Node::DeclareFloat(
+                        "anakin".to_string(),
+                        Box::new(Node::Float(27700.0))),
+
+                    Node::DeclareFloat(
+                        "luke".to_string(),
+                        Box::new(Node::Float(14500.0))),
+
+                    Node::DeclareFloat(
+                        "leia".to_string(),
+                        Box::new(Node::Float(14500.0))),
+
+                    Node::DeclareBoolean(
+                        "midichlorian".to_string(),
+                        Box::new(Node::Boolean(false))),
+
+                    Node::AssignVariable(
+                        "midichlorian".to_string(),
+                        Box::new(Node::Variable("luke".to_string())),
+                        vec!(
+                            Node::Binary(BinaryOperation::GreaterThan, Box::new(Node::Variable("anakin".to_string()))),
+                        )),
+
+                    Node::AssignVariable(
+                        "midichlorian".to_string(),
+                        Box::new(Node::Variable("anakin".to_string())),
+                        vec!(
+                            Node::Binary(BinaryOperation::LessThan, Box::new(Node::Variable("leia".to_string()))),
+                        )),
+
+                    Node::AssignVariable(
+                        "midichlorian".to_string(),
+                        Box::new(Node::Variable("leia".to_string())),
+                        vec!(
+                            Node::Binary(BinaryOperation::Equal, Box::new(Node::Variable("luke".to_string()))),
+                        )),
+                ))
+            ]
+        );
+    }
+
+    #[test]
     fn logic() {
     }
 
