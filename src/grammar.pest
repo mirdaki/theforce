@@ -36,6 +36,7 @@ Statement = _{
     | AssignStatement
     | AssignFromFunctionStatement
     | PrintStatement
+    | ForStatement
     | WhileStatement
     | IfStatement
     | CallFunctionStatment
@@ -72,6 +73,13 @@ AssignFromFunctionStatement = {
 }
 
 PrintStatement = { Print ~ Value }
+
+ForStatement = { 
+    For ~ Value
+    ~ ForStart ~ Identifier
+    ~ Statements
+    ~ EndFor
+}
 
 WhileStatement = { 
     While ~ Value
@@ -186,3 +194,6 @@ If = _{ "Do or do not." }
 Else = _{ "These aren’t the droids you’re looking for." }
 EndIf = _{ "You have failed me for the last time." }
 PassArgument = _{ "I’ll try spinning, thats a good trick." }
+For = _{ "For a thousand generations the Jedi were guardians of the republic." }
+ForStart = _{ "Let the Wookiee win." }
+EndFor = _{ "You cannot escape your destiny." }

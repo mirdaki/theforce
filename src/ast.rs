@@ -3,7 +3,6 @@ use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Node {
-    // For,
     AssignVariable(String, Box<Node>, Vec<Node>),
     Binary(BinaryOperation, Box<Node>),
     Boolean(bool),
@@ -13,6 +12,7 @@ pub enum Node {
     DeclareFunction(String, Vec<Node>, Vec<Node>),
     DeclareString(String, Box<Node>),
     Float(f32),
+    For(Box<Node>, Box<Node>, Vec<Node>),
     Function(String, Vec<Node>, Vec<Node>),
     If(Box<Node>, Vec<Node>, Vec<Node>),
     Main(Vec<Node>),

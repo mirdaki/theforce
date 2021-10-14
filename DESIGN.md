@@ -33,6 +33,8 @@ WIP
 - EndFor
     - **You cannot escape your destiny**
     - When 900 years old you reach, look as good, you will not
+- ForStart
+    - Let the Wookiee win
 - +
     - This will make a fine addition to my collection
 - -
@@ -69,7 +71,6 @@ WIP
     - Now that’s a name I have not heard in a long time, a long time
 - Return
     - There is nothing for me here now
-    - Let the Wookiee win
     - **You’re all clear kid, let's blow this thing and go home**
 - EndFunctionDeclaration
     - **It is clear to me the Republic no longer functions**
@@ -182,7 +183,8 @@ BeginMain
         # Stuff
     EndWhile
 
-    For intValueExpre # Auto increments a value?
+    For intValueExpre
+    ForStartValue name
         # Stuff
     EndFor
     

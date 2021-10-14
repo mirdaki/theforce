@@ -98,6 +98,16 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let mut pair = pair.into_inner();
             Node::Return(Box::new(build_ast(pair.next().unwrap())))
         }
+        Rule::ForStatement => {
+            let mut pairs = pair.into_inner();
+            let value = build_ast(pairs.next().unwrap());
+            let identifier = pairs.next().unwrap().as_str();
+            let mut statments = Vec::<Node>::new();
+            for pair in pairs.into_iter() {
+                statments.push(build_ast(pair));
+            }
+            Node::For(Box::new(value), Box::new(Node::Variable(identifier.to_string())), statments)
+        }
         Rule::WhileStatement => {
             let mut pairs = pair.into_inner();
             let value = build_ast(pairs.next().unwrap());
@@ -515,6 +525,35 @@ mod tests {
 
     #[test]
     fn for_loop() {
+        let source = r#"
+        Do it!
+            Yoda, you seek Yoda. deadYounglings
+            Whoosa are youssa? 0
+
+            For a thousand generations the Jedi were guardians of the republic. 10
+            Let the Wookiee win. deadYounglings
+                The Sacred Texts! deadYounglings
+            You cannot escape your destiny.
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                    Node::DeclareFloat(
+                        "deadYounglings".to_string(),
+                        Box::new(Node::Float(0.0))),
+
+                    Node::For(
+                        Box::new(Node::Float(10.0)),
+                        Box::new(Node::Variable("deadYounglings".to_string())),
+                        vec!(Node::Print(Box::new(Node::Variable("deadYounglings".to_string())))),
+                    )
+                ))
+            ]
+        );
     }
 
     #[test]
