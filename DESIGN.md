@@ -1,5 +1,9 @@
 # Design of the Force
 
+WIP
+
+## Keyword Mapping
+
 - False
     - Amazing, every word of what you just said is wrong
     - Oh, not good
@@ -8,12 +12,12 @@
     - We don’t serve there kind here
     - That’s no moon
 - True
-    - What I told you was true from **a certain point of view**
+    - What I told you was true **from a certain point of view**
     - Help me Obi-Wan Kenobi, you’re my only hope
     - Search you feelings lord Vader, you know it to be true
 - If
     - Try not. Do or do not. There is no try.
-    - **Do or do not.**
+    - **Do or do not**
 - Else
     - These aren’t the droids you’re looking for
 - EndIf
@@ -29,6 +33,8 @@
 - EndFor
     - **You cannot escape your destiny**
     - When 900 years old you reach, look as good, you will not
+- ForStart
+    - Let the Wookiee win
 - +
     - This will make a fine addition to my collection
 - -
@@ -49,44 +55,41 @@
 - <
     - Impressive. Most impressive
 - Or
-    - Never tell me the odds
+    - As you wish
 - And
     - There is another
 - Not
     - Always with you what cannot be done
 - Noop
     - Move along. Move along
-- DeclareMethod
+- DeclareFunction
     - What is thy bidding, my master
     - **This is where the fun begins**
-- NonVoidMethod
-    - All right that's pretty much nowhere
-- MethodArguments
+- NotVoidFunction
+    - It's a trap
+- FunctionParameters
     - Now that’s a name I have not heard in a long time, a long time
 - Return
     - There is nothing for me here now
-    - Let the Wookiee win
     - **You’re all clear kid, let's blow this thing and go home**
-- EndMethodDeclaration
+- EndFunctionDeclaration
     - **It is clear to me the Republic no longer functions**
     - You want to go home and rethink your life
     - You know what you need to do
-- CallMethod
+- CallFunction
     - I have a bad feeling about this
-    - **I hope you know what you’re doing**
-- AssignVariableFromMethodCall
+- AssignVariableFromFunctionCall
     - You saved me
-    - As you wish
     - **Many Bothans died to bring us this information**
-- DeclareInt
+- DeclareFloat
     - Yoda, you seek Yoda
 - DeclareString
-    - 
+    - Size matters not
 - DeclareBool
     - I am the senate
 - SetInitialValue
     - The maker!
-    - Whoosa are youssa
+    - **Whoosa are youssa**
 - BeginMain
     - **Do it**
     - This is where the fun begins
@@ -96,10 +99,12 @@
     - Use the Force
     - What is meessa saying
     - **The Sacred Texts!**
-- ReadInteger
+- ReadFloat
     - Looking, found someone I would say you have
 - ReadString
-    - 
+    - Now this is pod racing
+- ReadBoolean
+    - I hope you know what you’re doing
 - AssignVariable
     - What a piece of junk
 - SetValue
@@ -107,6 +112,8 @@
     - I am a Jedi, like my father before me
 - EndAssignVariable
     - The garbage will do
+- PassArgument
+    - I’ll try spinning, thats a good trick.
 - ParseError
     - Sometimes there are things no one can fix.
     - I trusted them to fix it. It's not my fault
@@ -123,11 +130,64 @@
     - How rude
     - Will this agony ever end?
     - Amazing, every word of what you just said is wrong
-    
 
-Thinhs we must use
-- It's a trap
-- I am the senate
-- I’ll try spinning, thats a good trick
-- Now this is pod racing
-- Size matters not
+
+
+## Example
+
+With out the keywords
+
+```force
+DeclareFunction name
+    # void
+EndFunctionDeclaration
+
+DeclareFunction name
+    FunctionParameters firstParam
+    FunctionParameters secondParam
+    NonVoidFunction
+    
+    # Stuff
+    Return value
+EndFunctionDeclaration
+
+BeginMain
+    DeclareFloat name
+    SetInitialValue value
+
+    AssignVariable name
+        SetValue firstOperand
+        + secondOperand
+        / thirdOperand
+    EndAssignVariable
+
+    AssignVariable name
+        SetValue firstOperand
+        or secondOperand
+    EndAssignVariable
+
+    AssignVariableFromFunctionCall name
+        CallFunction name
+    EndAssignVariable
+
+    AssignVariableFromFunctionCall name
+        CallFunction ReadString
+    EndAssignVariable
+    
+    If value
+        # Stuff
+    Else
+        # Stuff
+    EndIf
+
+    While value
+        # Stuff
+    EndWhile
+
+    For intValueExpre
+    ForStartValue name
+        # Stuff
+    EndFor
+    
+EndMain
+```
