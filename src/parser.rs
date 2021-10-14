@@ -27,13 +27,42 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
     match pair.as_rule() {
         Rule::Main => {
             let pairs = pair.into_inner();
-            let mut statments = Vec::<Node>::new();
+            let mut body = Vec::<Node>::new();
             for pair in pairs.into_iter() {
-                statments.push(build_ast(pair));
+                body.push(build_ast(pair));
             }
-            Node::Main(statments)
+            Node::Main(body)
         }
-        Rule::AssignStatement => {
+        Rule::VoidFunction | Rule::NonVoidFunction => {
+            let mut pairs = pair.into_inner();
+            let identfier = pairs.next().unwrap().as_str();
+            let mut paramaters = Vec::<Node>::new();
+            let maybe_params = pairs.next().unwrap();
+            if Rule::Parameters == maybe_params.as_rule() {
+                for pair in maybe_params.into_inner() {
+                    paramaters.push(build_ast(pair));
+                }
+            }
+            let mut body = Vec::<Node>::new();
+            for pair in pairs {
+                body.push(build_ast(pair));
+            }
+
+            Node::Function(identfier.to_string(), paramaters, body)
+        },
+        Rule::CallFunctionStatment => {
+            let mut pairs = pair.into_inner();
+            let identfier = pairs.next().unwrap().as_str();
+            let mut arguments = Vec::<Node>::new();
+            let maybe_args = pairs.next().unwrap();
+            if Rule::Arguments == maybe_args.as_rule() {
+                for pair in maybe_args.into_inner() {
+                    arguments.push(build_ast(pair));
+                }
+            }
+            Node::CallFunction(identfier.to_string(), arguments)
+        }
+        Rule::AssignStatement | Rule::AssignFromFunctionStatement => {
             let mut pairs = pair.into_inner();
             let identfier = pairs.next().unwrap().as_str();
             let value = build_ast(pairs.next().unwrap());
@@ -64,6 +93,10 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
         Rule::PrintStatement => {
             let mut pair = pair.into_inner();
             Node::Print(Box::new(build_ast(pair.next().unwrap())))
+        }
+        Rule::ReturnStatement => {
+            let mut pair = pair.into_inner();
+            Node::Return(Box::new(build_ast(pair.next().unwrap())))
         }
         Rule::WhileStatement => {
             let mut pairs = pair.into_inner();
@@ -481,6 +514,10 @@ mod tests {
     }
 
     #[test]
+    fn for_loop() {
+    }
+
+    #[test]
     fn if_else() {
         let source = r#"
         Do it!
@@ -509,6 +546,95 @@ mod tests {
     
     #[test]
     fn functions() {
+        let source = r#"
+        This is where the fun begins. NameTheSystem
+        Now that’s a name I have not heard in a long time, a long time. planet
+            The Sacred Texts! "Goodbye"
+            The Sacred Texts! planet
+            The Sacred Texts! "Deathstar noise"
+        It is clear to me the Republic no longer functions.
+
+        Do it!
+            I have a bad feeling about this. NameTheSystem 
+            I’ll try spinning, thats a good trick. "Alderaan"
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Function(
+                "NameTheSystem".to_string(),
+                vec!(Node::Variable("planet".to_string())),
+                vec!(
+                    Node::Print(Box::new(Node::String("Goodbye".to_string()))), 
+                    Node::Print(Box::new(Node::Variable("planet".to_string()))),
+                    Node::Print(Box::new(Node::String("Deathstar noise".to_string()))))
+            ),
+                Node::Main(vec!(
+                    Node::CallFunction("NameTheSystem".to_string(), vec!(Node::String("Alderaan".to_string()))
+                )))
+            ]
+        );
+
+        let source = r#"
+        This is where the fun begins. TheOdds
+        Now that’s a name I have not heard in a long time, a long time. odds
+        It's a trap!
+            I am the senate! survive
+            Whoosa are youssa? No, that's not true. That's impossible!
+
+            What a piece of junk! survive
+                I am your father. odds
+                Never tell me the odds! 3719
+                You're a Jedi too, nice to meet you. 0
+            The garbage will do.
+            
+            You’re all clear kid, let's blow this thing and go home. survive
+        It is clear to me the Republic no longer functions.
+
+        Do it!
+            I am the senate! survive
+            Whoosa are youssa? No, that's not true. That's impossible!
+
+            Many Bothans died to bring us this information. survive
+                I have a bad feeling about this. TheOdds
+                I’ll try spinning, thats a good trick. 52
+            The garbage will do.
+
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Function(
+                "TheOdds".to_string(),
+                vec!(Node::Variable("odds".to_string())),
+                vec![
+                    Node::DeclareBoolean("survive".to_string(), Box::new(Node::Boolean(false))), 
+                    Node::AssignVariable(
+                        "survive".to_string(), 
+                        Box::new(Node::Variable("odds".to_string())), 
+                        vec![
+                            Node::Binary(BinaryOperation::Modulus, Box::new(Node::Float(3719.0))),
+                            Node::Binary(BinaryOperation::Equal, Box::new(Node::Float(0.0))),
+                        ]
+                    ),
+                    Node::Return(Box::new(Node::Variable("survive".to_string())))
+                ]),
+                Node::Main(vec![
+                    Node::DeclareBoolean("survive".to_string(), Box::new(Node::Boolean(false))), 
+                    Node::AssignVariable(
+                        "survive".to_string(), 
+                        Box::new(Node::CallFunction("TheOdds".to_string(), vec!(Node::Float(52.0)))),
+                        vec!()
+                    )
+                ])
+            ]
+        );
     }
 
     #[test]

@@ -62,7 +62,7 @@ AssignStatement = {
     ~ SetValue ~ Value
     ~ Operator*
     ~ EndAssignVariable
-    }
+}
 
 AssignFromFunctionStatement = {
     AssignVariableFromFunctionCall ~ VariableName
@@ -88,8 +88,10 @@ IfStatement = {
 
 CallFunctionStatment = { 
     CallFunction ~ FunctionName
-    ~ (PassValue ~ Value)*
-    }
+    ~ Arguments
+}
+
+Arguments = { (PassArgument ~ Value)* }
 
 ElseClause = { Else ~ Statements }
 
@@ -183,4 +185,4 @@ EndWhile = _{ "Let the past die." }
 If = _{ "Do or do not." }
 Else = _{ "These aren’t the droids you’re looking for." }
 EndIf = _{ "You have failed me for the last time." }
-PassValue = _{ "I’ll try spinning, thats a good trick." }
+PassArgument = _{ "I’ll try spinning, thats a good trick." }
