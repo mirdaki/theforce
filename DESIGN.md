@@ -78,7 +78,6 @@ WIP
     - You know what you need to do
 - CallFunction
     - I have a bad feeling about this
-    - I hope you know what you’re doing
 - AssignVariableFromFunctionCall
     - You saved me
     - **Many Bothans died to bring us this information**
@@ -104,6 +103,8 @@ WIP
     - Looking, found someone I would say you have
 - ReadString
     - Now this is pod racing
+- ReadBoolean
+    - I hope you know what you’re doing
 - AssignVariable
     - What a piece of junk
 - SetValue

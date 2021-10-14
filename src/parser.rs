@@ -50,7 +50,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
 
             Node::Function(identfier.to_string(), paramaters, body)
         },
-        Rule::CallFunctionStatment => {
+        Rule::CallFunctionStatement => {
             let mut pairs = pair.into_inner();
             let identfier = pairs.next().unwrap().as_str();
             let mut arguments = Vec::<Node>::new();
@@ -89,6 +89,21 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let identifier = pair.next().unwrap().as_str();
             let value = build_ast(pair.next().unwrap());
             Node::DeclareString(identifier.to_string(), Box::new(value))
+        }
+        Rule::ReadBooleanStatement => {
+            let mut pair = pair.into_inner();
+            let identifier = pair.next().unwrap().as_str();
+            Node::ReadBoolean(Box::new(Node::Variable(identifier.to_string())))
+        }
+        Rule::ReadFloatStatement => {
+            let mut pair = pair.into_inner();
+            let identifier = pair.next().unwrap().as_str();
+            Node::ReadFloat(Box::new(Node::Variable(identifier.to_string())))
+        }
+        Rule::ReadStringStatement => {
+            let mut pair = pair.into_inner();
+            let identifier = pair.next().unwrap().as_str();
+            Node::ReadString(Box::new(Node::Variable(identifier.to_string())))
         }
         Rule::PrintStatement => {
             let mut pair = pair.into_inner();
@@ -678,6 +693,74 @@ mod tests {
 
     #[test]
     fn input() {
+        let source = r#"
+        Do it!
+            Yoda, you seek Yoda. jawa
+            Whoosa are youssa? 0.0
+
+            Looking, found someone I would say you have. jawa
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec![
+                    Node::DeclareFloat(
+                        "jawa".to_string(),
+                        Box::new(Node::Float(0.0))
+                    ),
+                    Node::ReadFloat(Box::new(Node::Variable("jawa".to_string())))
+                ])
+            ]
+        );
+
+        let source = r#"
+        Do it!
+            Size matters not. ewok
+            Whoosa are youssa? ""
+
+            Now this is pod racing. ewok
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec![
+                    Node::DeclareString(
+                        "ewok".to_string(),
+                        Box::new(Node::String("".to_string()))
+                    ),
+                    Node::ReadString(Box::new(Node::Variable("ewok".to_string())))
+                ])
+            ]
+        );
+
+        let source = r#"
+        Do it!
+            I am the senate! darkSide
+            Whoosa are youssa? From a certain point of view.
+
+            I hope you know what you’re doing. darkSide
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec![
+                    Node::DeclareBoolean(
+                        "darkSide".to_string(),
+                        Box::new(Node::Boolean(true))
+                    ),
+                    Node::ReadBoolean(Box::new(Node::Variable("darkSide".to_string())))
+                ])
+            ]
+        );
     }
 
     #[test]

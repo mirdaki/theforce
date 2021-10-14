@@ -36,10 +36,13 @@ Statement = _{
     | AssignStatement
     | AssignFromFunctionStatement
     | PrintStatement
+    | ReadFloatStatement
+    | ReadStringStatement
+    | ReadBooleanStatement
     | ForStatement
     | WhileStatement
     | IfStatement
-    | CallFunctionStatment
+    | CallFunctionStatement
     | Noop
 }
 
@@ -67,16 +70,20 @@ AssignStatement = {
 
 AssignFromFunctionStatement = {
     AssignVariableFromFunctionCall ~ VariableName
-    ~ CallFunctionStatment
+    ~ CallFunctionStatement
     ~ Operator*
     ~ EndAssignVariable
 }
 
 PrintStatement = { Print ~ Value }
 
+ReadFloatStatement = { ReadFloat ~ VariableName }
+ReadStringStatement = { ReadString ~ VariableName }
+ReadBooleanStatement = { ReadBoolean ~ VariableName }
+
 ForStatement = { 
     For ~ Value
-    ~ ForStart ~ Identifier
+    ~ ForStart ~ VariableName
     ~ Statements
     ~ EndFor
 }
@@ -94,7 +101,7 @@ IfStatement = {
     ~ EndIf
 }
 
-CallFunctionStatment = { 
+CallFunctionStatement = { 
     CallFunction ~ FunctionName
     ~ Arguments
 }
@@ -197,3 +204,6 @@ PassArgument = _{ "I’ll try spinning, thats a good trick." }
 For = _{ "For a thousand generations the Jedi were guardians of the republic." }
 ForStart = _{ "Let the Wookiee win." }
 EndFor = _{ "You cannot escape your destiny." }
+ReadFloat = _{ "Looking, found someone I would say you have." }
+ReadString = _{ "Now this is pod racing." }
+ReadBoolean = _{ "I hope you know what you’re doing." }
