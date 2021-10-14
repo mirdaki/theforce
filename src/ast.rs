@@ -53,7 +53,7 @@ impl fmt::Display for Node {
             Node::Float(n) => write!(f, "{}", n),
             Node::String(s) => write!(f, "{}", s),
             Node::Boolean(b) => write!(f, "{}", b),
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }

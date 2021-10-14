@@ -3,7 +3,7 @@ extern crate pest_derive;
 
 use pest::Parser;
 
-use crate::ast::{Node, UnaryOperation, BinaryOperation};
+use crate::ast::{BinaryOperation, Node, UnaryOperation};
 
 #[derive(pest_derive::Parser)]
 #[grammar = "grammar.pest"]
@@ -49,7 +49,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             }
 
             Node::Function(identfier.to_string(), paramaters, body)
-        },
+        }
         Rule::CallFunctionStatement => {
             let mut pairs = pair.into_inner();
             let identfier = pairs.next().unwrap().as_str();
@@ -121,7 +121,11 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             for pair in pairs.into_iter() {
                 statments.push(build_ast(pair));
             }
-            Node::For(Box::new(value), Box::new(Node::Variable(identifier.to_string())), statments)
+            Node::For(
+                Box::new(value),
+                Box::new(Node::Variable(identifier.to_string())),
+                statments,
+            )
         }
         Rule::WhileStatement => {
             let mut pairs = pair.into_inner();
@@ -143,57 +147,88 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
                         else_statments.push(build_ast(pair));
                     }
                     break;
-                } 
+                }
                 if_statments.push(build_ast(pair));
             }
             Node::If(Box::new(value), if_statments, else_statments)
         }
-        Rule::NotOperator => {
-            Node::Unary(UnaryOperation::Not)
-        }
+        Rule::NotOperator => Node::Unary(UnaryOperation::Not),
         Rule::AddOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::Add, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::Add,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::SubtractOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::Subtract, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::Subtract,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::MultiplyOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::Multiply, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::Multiply,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::DivideOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::Divide, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::Divide,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::ExponentOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::Exponent, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::Exponent,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::ModulusOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::Modulus, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::Modulus,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::EqualOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::Equal, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::Equal,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::GreaterThanOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::GreaterThan, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::GreaterThan,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::LessThanOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::LessThan, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::LessThan,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::OrOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::Or, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::Or,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::AndOperator => {
             let mut pair = pair.into_inner();
-            Node::Binary(BinaryOperation::And, Box::new(build_ast(pair.next().unwrap())))
+            Node::Binary(
+                BinaryOperation::And,
+                Box::new(build_ast(pair.next().unwrap())),
+            )
         }
         Rule::Boolean => {
             let pair = pair.into_inner().next().unwrap();
@@ -208,8 +243,8 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
         Rule::String => {
             let string = pair.as_str();
             // Remove parenthesis from string
-            Node::String(string[1..string.len()-1].to_string())
-        },
+            Node::String(string[1..string.len() - 1].to_string())
+        }
         Rule::VariableName => {
             let name = pair.as_str();
             Node::Variable(name.to_string())
@@ -221,7 +256,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn hello_there() {
         let source = r#"
@@ -234,14 +269,12 @@ mod tests {
 
         assert_eq!(
             ast.unwrap(),
-            vec![Node::Main(vec!(
-                    Node::Print(
-                        Box::new(Node::String("Hello there".to_string()))
-                )))
-            ]
+            vec![Node::Main(vec!(Node::Print(Box::new(Node::String(
+                "Hello there".to_string()
+            )))))]
         );
     }
-    
+
     #[test]
     fn variable() {
         let source = r#"
@@ -255,12 +288,10 @@ mod tests {
 
         assert_eq!(
             ast.unwrap(),
-            vec![Node::Main(vec!(
-                    Node::DeclareFloat(
-                        "jawa".to_string(),
-                        Box::new(Node::Float(-13.2))
-                )))
-            ]
+            vec![Node::Main(vec!(Node::DeclareFloat(
+                "jawa".to_string(),
+                Box::new(Node::Float(-13.2))
+            )))]
         );
 
         let source = r#"
@@ -274,12 +305,10 @@ mod tests {
 
         assert_eq!(
             ast.unwrap(),
-            vec![Node::Main(vec!(
-                    Node::DeclareString(
-                        "ewok".to_string(),
-                        Box::new(Node::String("Nub Nub".to_string()))
-                )))
-            ]
+            vec![Node::Main(vec!(Node::DeclareString(
+                "ewok".to_string(),
+                Box::new(Node::String("Nub Nub".to_string()))
+            )))]
         );
 
         let source = r#"
@@ -293,12 +322,10 @@ mod tests {
 
         assert_eq!(
             ast.unwrap(),
-            vec![Node::Main(vec!(
-                    Node::DeclareBoolean(
-                        "darkSide".to_string(),
-                        Box::new(Node::Boolean(true))
-                )))
-            ]
+            vec![Node::Main(vec!(Node::DeclareBoolean(
+                "darkSide".to_string(),
+                Box::new(Node::Boolean(true))
+            )))]
         );
     }
 
@@ -326,23 +353,20 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![Node::Main(vec!(
-                    Node::DeclareFloat(
-                        "porg".to_string(),
-                        Box::new(Node::Float(4.0))),
-
-                    Node::AssignVariable(
-                        "porg".to_string(),
-                        Box::new(Node::Variable("porg".to_string())),
-                        vec!(
-                            Node::Binary(BinaryOperation::Add, Box::new(Node::Float(2.0))),
-                            Node::Binary(BinaryOperation::Subtract, Box::new(Node::Float(1.0))),
-                            Node::Binary(BinaryOperation::Multiply, Box::new(Node::Float(3.0))),
-                            Node::Binary(BinaryOperation::Divide, Box::new(Node::Float(5.0))),
-                            Node::Binary(BinaryOperation::Exponent, Box::new(Node::Float(2.0))),
-                            Node::Binary(BinaryOperation::Modulus, Box::new(Node::Float(10.0))),
-                        )
-                )))
-            ]
+                Node::DeclareFloat("porg".to_string(), Box::new(Node::Float(4.0))),
+                Node::AssignVariable(
+                    "porg".to_string(),
+                    Box::new(Node::Variable("porg".to_string())),
+                    vec!(
+                        Node::Binary(BinaryOperation::Add, Box::new(Node::Float(2.0))),
+                        Node::Binary(BinaryOperation::Subtract, Box::new(Node::Float(1.0))),
+                        Node::Binary(BinaryOperation::Multiply, Box::new(Node::Float(3.0))),
+                        Node::Binary(BinaryOperation::Divide, Box::new(Node::Float(5.0))),
+                        Node::Binary(BinaryOperation::Exponent, Box::new(Node::Float(2.0))),
+                        Node::Binary(BinaryOperation::Modulus, Box::new(Node::Float(10.0))),
+                    )
+                )
+            ))]
         );
     }
 
@@ -384,44 +408,35 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![Node::Main(vec!(
-                    Node::DeclareFloat(
-                        "anakin".to_string(),
-                        Box::new(Node::Float(27700.0))),
-
-                    Node::DeclareFloat(
-                        "luke".to_string(),
-                        Box::new(Node::Float(14500.0))),
-
-                    Node::DeclareFloat(
-                        "leia".to_string(),
-                        Box::new(Node::Float(14500.0))),
-
-                    Node::DeclareBoolean(
-                        "midichlorian".to_string(),
-                        Box::new(Node::Boolean(false))),
-
-                    Node::AssignVariable(
-                        "midichlorian".to_string(),
-                        Box::new(Node::Variable("luke".to_string())),
-                        vec!(
-                            Node::Binary(BinaryOperation::GreaterThan, Box::new(Node::Variable("anakin".to_string()))),
-                        )),
-
-                    Node::AssignVariable(
-                        "midichlorian".to_string(),
-                        Box::new(Node::Variable("anakin".to_string())),
-                        vec!(
-                            Node::Binary(BinaryOperation::LessThan, Box::new(Node::Variable("leia".to_string()))),
-                        )),
-
-                    Node::AssignVariable(
-                        "midichlorian".to_string(),
-                        Box::new(Node::Variable("leia".to_string())),
-                        vec!(
-                            Node::Binary(BinaryOperation::Equal, Box::new(Node::Variable("luke".to_string()))),
-                        )),
-                ))
-            ]
+                Node::DeclareFloat("anakin".to_string(), Box::new(Node::Float(27700.0))),
+                Node::DeclareFloat("luke".to_string(), Box::new(Node::Float(14500.0))),
+                Node::DeclareFloat("leia".to_string(), Box::new(Node::Float(14500.0))),
+                Node::DeclareBoolean("midichlorian".to_string(), Box::new(Node::Boolean(false))),
+                Node::AssignVariable(
+                    "midichlorian".to_string(),
+                    Box::new(Node::Variable("luke".to_string())),
+                    vec!(Node::Binary(
+                        BinaryOperation::GreaterThan,
+                        Box::new(Node::Variable("anakin".to_string()))
+                    ),)
+                ),
+                Node::AssignVariable(
+                    "midichlorian".to_string(),
+                    Box::new(Node::Variable("anakin".to_string())),
+                    vec!(Node::Binary(
+                        BinaryOperation::LessThan,
+                        Box::new(Node::Variable("leia".to_string()))
+                    ),)
+                ),
+                Node::AssignVariable(
+                    "midichlorian".to_string(),
+                    Box::new(Node::Variable("leia".to_string())),
+                    vec!(Node::Binary(
+                        BinaryOperation::Equal,
+                        Box::new(Node::Variable("luke".to_string()))
+                    ),)
+                ),
+            ))]
         );
     }
 
@@ -460,41 +475,31 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![Node::Main(vec!(
-                    Node::DeclareBoolean(
-                        "lightside".to_string(),
-                        Box::new(Node::Boolean(true))),
-
-                    Node::DeclareBoolean(
-                        "darkside".to_string(),
-                        Box::new(Node::Boolean(false))),
-
-                    Node::DeclareBoolean(
-                        "revan".to_string(),
-                        Box::new(Node::Boolean(false))),
-
-
-                    Node::AssignVariable(
-                        "revan".to_string(),
-                        Box::new(Node::Variable("lightside".to_string())),
-                        vec!(
-                            Node::Binary(BinaryOperation::Or, Box::new(Node::Variable("darkside".to_string()))),
-                        )),
-
-                    Node::AssignVariable(
-                        "revan".to_string(),
-                        Box::new(Node::Variable("revan".to_string())),
-                        vec!(
-                            Node::Binary(BinaryOperation::And, Box::new(Node::Variable("lightside".to_string()))),
-                        )),
-
-                    Node::AssignVariable(
-                        "revan".to_string(),
-                        Box::new(Node::Variable("revan".to_string())),
-                        vec!(
-                            Node::Unary(UnaryOperation::Not),
-                        )),
-                ))
-            ]
+                Node::DeclareBoolean("lightside".to_string(), Box::new(Node::Boolean(true))),
+                Node::DeclareBoolean("darkside".to_string(), Box::new(Node::Boolean(false))),
+                Node::DeclareBoolean("revan".to_string(), Box::new(Node::Boolean(false))),
+                Node::AssignVariable(
+                    "revan".to_string(),
+                    Box::new(Node::Variable("lightside".to_string())),
+                    vec!(Node::Binary(
+                        BinaryOperation::Or,
+                        Box::new(Node::Variable("darkside".to_string()))
+                    ),)
+                ),
+                Node::AssignVariable(
+                    "revan".to_string(),
+                    Box::new(Node::Variable("revan".to_string())),
+                    vec!(Node::Binary(
+                        BinaryOperation::And,
+                        Box::new(Node::Variable("lightside".to_string()))
+                    ),)
+                ),
+                Node::AssignVariable(
+                    "revan".to_string(),
+                    Box::new(Node::Variable("revan".to_string())),
+                    vec!(Node::Unary(UnaryOperation::Not),)
+                ),
+            ))]
         );
     }
 
@@ -519,22 +524,19 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![Node::Main(vec!(
-                    Node::DeclareFloat(
+                Node::DeclareFloat("deathStars".to_string(), Box::new(Node::Float(3.0))),
+                Node::While(
+                    Box::new(Node::Variable("deathStars".to_string())),
+                    vec!(Node::AssignVariable(
                         "deathStars".to_string(),
-                        Box::new(Node::Float(3.0))),
-
-                    Node::While(
                         Box::new(Node::Variable("deathStars".to_string())),
-                        vec!(Node::AssignVariable(
-                            "deathStars".to_string(),
-                            Box::new(Node::Variable("deathStars".to_string())),
-                            vec!(
-                                Node::Binary(BinaryOperation::Subtract, Box::new(Node::Float(1.0))),
-                            ))
-                        ),
-                    )
-                ))
-            ]
+                        vec!(Node::Binary(
+                            BinaryOperation::Subtract,
+                            Box::new(Node::Float(1.0))
+                        ),)
+                    )),
+                )
+            ))]
         );
     }
 
@@ -557,17 +559,15 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![Node::Main(vec!(
-                    Node::DeclareFloat(
-                        "deadYounglings".to_string(),
-                        Box::new(Node::Float(0.0))),
-
-                    Node::For(
-                        Box::new(Node::Float(10.0)),
-                        Box::new(Node::Variable("deadYounglings".to_string())),
-                        vec!(Node::Print(Box::new(Node::Variable("deadYounglings".to_string())))),
-                    )
-                ))
-            ]
+                Node::DeclareFloat("deadYounglings".to_string(), Box::new(Node::Float(0.0))),
+                Node::For(
+                    Box::new(Node::Float(10.0)),
+                    Box::new(Node::Variable("deadYounglings".to_string())),
+                    vec!(Node::Print(Box::new(Node::Variable(
+                        "deadYounglings".to_string()
+                    )))),
+                )
+            ))]
         );
     }
 
@@ -587,17 +587,14 @@ mod tests {
 
         assert_eq!(
             ast.unwrap(),
-            vec![Node::Main(vec!(
-                    Node::If(
-                        Box::new(Node::Boolean(true)),
-                        vec!(Node::Print(Box::new(Node::String("Do".to_string())))),
-                        vec!(Node::Print(Box::new(Node::String("Don't".to_string()))))
-                    )
-                ))
-            ]
+            vec![Node::Main(vec!(Node::If(
+                Box::new(Node::Boolean(true)),
+                vec!(Node::Print(Box::new(Node::String("Do".to_string())))),
+                vec!(Node::Print(Box::new(Node::String("Don't".to_string()))))
+            )))]
         );
     }
-    
+
     #[test]
     fn functions() {
         let source = r#"
@@ -618,16 +615,19 @@ mod tests {
 
         assert_eq!(
             ast.unwrap(),
-            vec![Node::Function(
-                "NameTheSystem".to_string(),
-                vec!(Node::Variable("planet".to_string())),
-                vec!(
-                    Node::Print(Box::new(Node::String("Goodbye".to_string()))), 
-                    Node::Print(Box::new(Node::Variable("planet".to_string()))),
-                    Node::Print(Box::new(Node::String("Deathstar noise".to_string()))))
-            ),
-                Node::Main(vec!(
-                    Node::CallFunction("NameTheSystem".to_string(), vec!(Node::String("Alderaan".to_string()))
+            vec![
+                Node::Function(
+                    "NameTheSystem".to_string(),
+                    vec!(Node::Variable("planet".to_string())),
+                    vec!(
+                        Node::Print(Box::new(Node::String("Goodbye".to_string()))),
+                        Node::Print(Box::new(Node::Variable("planet".to_string()))),
+                        Node::Print(Box::new(Node::String("Deathstar noise".to_string())))
+                    )
+                ),
+                Node::Main(vec!(Node::CallFunction(
+                    "NameTheSystem".to_string(),
+                    vec!(Node::String("Alderaan".to_string()))
                 )))
             ]
         );
@@ -664,26 +664,34 @@ mod tests {
 
         assert_eq!(
             ast.unwrap(),
-            vec![Node::Function(
-                "TheOdds".to_string(),
-                vec!(Node::Variable("odds".to_string())),
-                vec![
-                    Node::DeclareBoolean("survive".to_string(), Box::new(Node::Boolean(false))), 
-                    Node::AssignVariable(
-                        "survive".to_string(), 
-                        Box::new(Node::Variable("odds".to_string())), 
-                        vec![
-                            Node::Binary(BinaryOperation::Modulus, Box::new(Node::Float(3719.0))),
-                            Node::Binary(BinaryOperation::Equal, Box::new(Node::Float(0.0))),
-                        ]
-                    ),
-                    Node::Return(Box::new(Node::Variable("survive".to_string())))
-                ]),
+            vec![
+                Node::Function(
+                    "TheOdds".to_string(),
+                    vec!(Node::Variable("odds".to_string())),
+                    vec![
+                        Node::DeclareBoolean("survive".to_string(), Box::new(Node::Boolean(false))),
+                        Node::AssignVariable(
+                            "survive".to_string(),
+                            Box::new(Node::Variable("odds".to_string())),
+                            vec![
+                                Node::Binary(
+                                    BinaryOperation::Modulus,
+                                    Box::new(Node::Float(3719.0))
+                                ),
+                                Node::Binary(BinaryOperation::Equal, Box::new(Node::Float(0.0))),
+                            ]
+                        ),
+                        Node::Return(Box::new(Node::Variable("survive".to_string())))
+                    ]
+                ),
                 Node::Main(vec![
-                    Node::DeclareBoolean("survive".to_string(), Box::new(Node::Boolean(false))), 
+                    Node::DeclareBoolean("survive".to_string(), Box::new(Node::Boolean(false))),
                     Node::AssignVariable(
-                        "survive".to_string(), 
-                        Box::new(Node::CallFunction("TheOdds".to_string(), vec!(Node::Float(52.0)))),
+                        "survive".to_string(),
+                        Box::new(Node::CallFunction(
+                            "TheOdds".to_string(),
+                            vec!(Node::Float(52.0))
+                        )),
                         vec!()
                     )
                 ])
@@ -707,13 +715,9 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![Node::Main(vec![
-                    Node::DeclareFloat(
-                        "jawa".to_string(),
-                        Box::new(Node::Float(0.0))
-                    ),
-                    Node::ReadFloat(Box::new(Node::Variable("jawa".to_string())))
-                ])
-            ]
+                Node::DeclareFloat("jawa".to_string(), Box::new(Node::Float(0.0))),
+                Node::ReadFloat(Box::new(Node::Variable("jawa".to_string())))
+            ])]
         );
 
         let source = r#"
@@ -730,13 +734,9 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![Node::Main(vec![
-                    Node::DeclareString(
-                        "ewok".to_string(),
-                        Box::new(Node::String("".to_string()))
-                    ),
-                    Node::ReadString(Box::new(Node::Variable("ewok".to_string())))
-                ])
-            ]
+                Node::DeclareString("ewok".to_string(), Box::new(Node::String("".to_string()))),
+                Node::ReadString(Box::new(Node::Variable("ewok".to_string())))
+            ])]
         );
 
         let source = r#"
@@ -753,13 +753,9 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![Node::Main(vec![
-                    Node::DeclareBoolean(
-                        "darkSide".to_string(),
-                        Box::new(Node::Boolean(true))
-                    ),
-                    Node::ReadBoolean(Box::new(Node::Variable("darkSide".to_string())))
-                ])
-            ]
+                Node::DeclareBoolean("darkSide".to_string(), Box::new(Node::Boolean(true))),
+                Node::ReadBoolean(Box::new(Node::Variable("darkSide".to_string())))
+            ])]
         );
     }
 
@@ -772,10 +768,7 @@ mod tests {
         let ast = parse(source);
         assert!(ast.is_ok());
 
-        assert_eq!(
-            ast.unwrap(),
-            vec!(Node::Main(Vec::new())
-        ));
+        assert_eq!(ast.unwrap(), vec!(Node::Main(Vec::new())));
 
         let source = r#"
         Do it!
@@ -785,20 +778,14 @@ mod tests {
         let ast = parse(source);
         assert!(ast.is_ok());
 
-        assert_eq!(
-            ast.unwrap(),
-            vec!(Node::Main(Vec::new()))
-        );
+        assert_eq!(ast.unwrap(), vec!(Node::Main(Vec::new())));
 
         let source = r#"
         "#;
         let ast = parse(source);
         assert!(ast.is_ok());
 
-        assert_eq!(
-            ast.unwrap(),
-            vec!()
-        );
+        assert_eq!(ast.unwrap(), vec!());
     }
 
     #[test]

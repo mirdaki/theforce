@@ -1,7 +1,7 @@
 mod ast;
-mod parser;
-mod interpreter;
 mod compiler;
+mod interpreter;
+mod parser;
 
 fn main() {
     let source = r#"
