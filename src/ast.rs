@@ -13,6 +13,7 @@ pub enum Node {
     DeclareFunction(String, Vec<Node>, Vec<Node>),
     DeclareString(String, Box<Node>),
     Float(f32),
+    Function(String, Vec<Node>, Vec<Node>),
     If(Box<Node>, Vec<Node>, Vec<Node>),
     Main(Vec<Node>),
     Print(Box<Node>),
@@ -21,7 +22,6 @@ pub enum Node {
     Unary(UnaryOperation),
     Variable(String),
     While(Box<Node>, Vec<Node>),
-    Noop,
 }
 
 #[derive(Debug, Clone, PartialEq)]

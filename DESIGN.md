@@ -60,25 +60,25 @@ WIP
     - Always with you what cannot be done
 - Noop
     - Move along. Move along
-- DeclareMethod
+- DeclareFunction
     - What is thy bidding, my master
     - **This is where the fun begins**
-- NotVoidMethod
+- NotVoidFunction
     - It's a trap
-- MethodArgument
+- FunctionParameters
     - Now that’s a name I have not heard in a long time, a long time
 - Return
     - There is nothing for me here now
     - Let the Wookiee win
     - **You’re all clear kid, let's blow this thing and go home**
-- EndMethodDeclaration
+- EndFunctionDeclaration
     - **It is clear to me the Republic no longer functions**
     - You want to go home and rethink your life
     - You know what you need to do
-- CallMethod
+- CallFunction
     - I have a bad feeling about this
     - I hope you know what you’re doing
-- AssignVariableFromMethodCall
+- AssignVariableFromFunctionCall
     - You saved me
     - **Many Bothans died to bring us this information**
 - DeclareFloat
@@ -126,10 +126,7 @@ WIP
     - How rude
     - Will this agony ever end?
     - Amazing, every word of what you just said is wrong
-    
 
-Things to consider
-- I’ll try spinning, thats a good trick
 
 
 ## Example
@@ -137,18 +134,18 @@ Things to consider
 With out the keywords
 
 ```force
-DeclareMethod name
+DeclareFunction name
     # void
-EndMethodDeclaration
+EndFunctionDeclaration
 
-DeclareMethod name
-    MethodArgument firstArg
-    MethodArgument secondArg
-    NonVoidMethod
+DeclareFunction name
+    FunctionParameters firstParam
+    FunctionParameters secondParam
+    NonVoidFunction
     
     # Stuff
     Return value
-EndMethodDeclaration
+EndFunctionDeclaration
 
 BeginMain
     DeclareFloat name
@@ -165,12 +162,12 @@ BeginMain
         or secondOperand
     EndAssignVariable
 
-    AssignVariableFromMethodCall name
-        CallMethod name
+    AssignVariableFromFunctionCall name
+        CallFunction name
     EndAssignVariable
 
-    AssignVariableFromMethodCall name
-        CallMethod ReadString
+    AssignVariableFromFunctionCall name
+        CallFunction ReadString
     EndAssignVariable
     
     If value

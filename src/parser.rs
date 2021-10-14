@@ -13,7 +13,7 @@ pub fn parse(source: &str) -> Result<Vec<Node>, pest::error::Error<Rule>> {
     let mut ast = vec![];
     let pairs = ForceParser::parse(Rule::Program, source)?;
     for pair in pairs {
-        if let Rule::Methods = pair.as_rule() {
+        if let Rule::Functions = pair.as_rule() {
             for pair in pair.into_inner() {
                 ast.push(build_ast(pair));
             }
@@ -508,7 +508,7 @@ mod tests {
     }
     
     #[test]
-    fn methods() {
+    fn functions() {
     }
 
     #[test]
@@ -558,6 +558,6 @@ mod tests {
     }
 
     #[test]
-    fn error_method() {
+    fn error_function() {
     }
 }
