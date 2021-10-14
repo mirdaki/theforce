@@ -74,7 +74,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             }
             Node::While(Box::new(value), statments)
         }
-        Rule::If => {
+        Rule::IfStatement => {
             let mut pairs = pair.into_inner();
             let value = build_ast(pairs.next().unwrap());
             let mut if_statments = Vec::<Node>::new();
@@ -493,6 +493,18 @@ mod tests {
         "#;
         let ast = parse(source);
         assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                    Node::If(
+                        Box::new(Node::Boolean(true)),
+                        vec!(Node::Print(Box::new(Node::String("Do".to_string())))),
+                        vec!(Node::Print(Box::new(Node::String("Don't".to_string()))))
+                    )
+                ))
+            ]
+        );
     }
     
     #[test]
