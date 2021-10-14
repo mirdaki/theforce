@@ -517,10 +517,40 @@ mod tests {
 
     #[test]
     fn other() {
-        // Empty main
-        // Noop
-        // Nothing at all
+        let source = r#"
+        Do it!
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
 
+        assert_eq!(
+            ast.unwrap(),
+            vec!(Node::Main(Vec::new())
+        ));
+
+        let source = r#"
+        Do it!
+            Move along. Move along.
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec!(Node::Main(Vec::new()))
+        );
+
+        let source = r#"
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec!()
+        );
     }
 
     #[test]
