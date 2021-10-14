@@ -720,9 +720,31 @@ mod tests {
 
     #[test]
     fn error_type() {
-    }
+        let source = r#"
+        Do it!
+            Yoda, you seek Yoda. binks
+            Whoosa are youssa? "Jar Jar"
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_err());
 
-    #[test]
-    fn error_function() {
+        let source = r#"
+        Do it!
+            Size matters not. holidaySpecial
+            Whoosa are youssa? From a certain point of view.
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_err());
+
+        let source = r#"
+        Do it!
+            I am the senate! lifeDay
+            Whoosa are youssa? -12.9
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_err());
     }
 }
