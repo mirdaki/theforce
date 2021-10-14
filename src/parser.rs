@@ -74,6 +74,22 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             }
             Node::While(Box::new(value), statments)
         }
+        Rule::If => {
+            let mut pairs = pair.into_inner();
+            let value = build_ast(pairs.next().unwrap());
+            let mut if_statments = Vec::<Node>::new();
+            let mut else_statments = Vec::<Node>::new();
+            for pair in pairs.into_iter() {
+                if pair.as_rule() == Rule::ElseClause {
+                    for pair in pair.into_inner().into_iter() {
+                        else_statments.push(build_ast(pair));
+                    }
+                    break;
+                } 
+                if_statments.push(build_ast(pair));
+            }
+            Node::If(Box::new(value), if_statments, else_statments)
+        }
         Rule::NotOperator => {
             Node::Unary(UnaryOperation::Not)
         }
@@ -466,6 +482,17 @@ mod tests {
 
     #[test]
     fn if_else() {
+        let source = r#"
+        Do it!
+            Do or do not. From a certain point of view.
+                The Sacred Texts! "Do"
+            These aren’t the droids you’re looking for.
+                The Sacred Texts! "Don't"
+            You have failed me for the last time.
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
     }
     
     #[test]

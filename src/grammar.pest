@@ -37,6 +37,7 @@ Statement = _{
     | AssignFromMethodStatement
     | PrintStatement
     | WhileStatement
+    | IfStatement
     | Noop
 }
 
@@ -77,6 +78,15 @@ WhileStatement = {
     ~ EndWhile
 }
 
+IfStatement = {
+    If ~ Value
+    ~ Statements
+    ~ ElseClause?
+    ~ EndIf
+}
+
+ElseClause = { Else ~ Statements }
+
 ReturnStatement = { Return ~ Value }
 
 Operator = _{ UnaryOperator | BinaryOperator }
@@ -111,7 +121,7 @@ LessThanOperator = { LessThan ~ Value }
 OrOperator = { Or ~ Value }
 AndOperator = { And ~ Value }
 
-Value = _{ VariableName | String | Float | Boolean }
+Value = _{ Boolean | VariableName | String | Float }
 
 VariableName = { Identifier }
 
@@ -145,9 +155,6 @@ AssignVariableFromMethodCall = _{ "Many Bothans died to bring us this informatio
 EndAssignVariable = _{ "The garbage will do." }
 SetValue = _{ "I am your father." }
 CallMethod = _{ "I have a bad feeling about this." }
-If = _{ "Do or do not." }
-Else = _{ "These aren’t the droids you’re looking for." }
-EndIf = _{ "You have failed me for the last time." }
 Not = { "Always with you what cannot be done." }
 Add = _{ "This will make a fine addition to my collection." }
 Subtract = _{ "Proceed with the countdown." }
@@ -167,3 +174,6 @@ SetInitalValue = _{ "Whoosa are youssa?" }
 Noop = _{ "Move along. Move along." }
 While = _ { "Here we go again." }
 EndWhile = _ { "Let the past die." }
+If = _ { "Do or do not." }
+Else = _ { "These aren’t the droids you’re looking for." }
+EndIf = _ { "You have failed me for the last time." }
