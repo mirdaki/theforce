@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::ast::Node;
+use crate::ast::{BinaryOperation, Node};
 
 struct Frame {
     variables: HashMap<String, Node>,
@@ -51,7 +51,27 @@ pub fn evaluate(ast: Vec<Node>) -> Result<(), String> {
 
 fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
     match ast {
-        Node::AssignVariable(_, _, _) => todo!(),
+        Node::AssignVariable(variable_name, first_value, operations) => {
+            // TODO: Check if value is actually a value?
+            // Place value at top of stack
+            let _ = evaluate_node(*first_value, state); 
+            for operation in operations {
+                // TOOD: Actual error message
+                let _ = match operation {
+                    Node::Binary(operation, value) => evaluate_binary(operation, *value, state),
+                    Node::Unary(operation) => todo!(),
+                    _ => Err("Invalid operation".to_string()),
+                };
+            }
+            let new_current = state.stack.last().unwrap().current.clone();
+            state
+                .stack
+                .last_mut()
+                .unwrap()
+                .variables
+                .insert(variable_name, new_current);
+            Ok(())
+        }
         Node::Binary(_, _) => todo!(),
         Node::Boolean(_) => {
             state.stack.last_mut().unwrap().current = ast;
@@ -141,6 +161,52 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
         }
         Node::While(_, _) => todo!(),
         Node::Noop => Ok(()),
+    }
+}
+
+fn evaluate_binary(op: BinaryOperation, value: Node, state: &mut State) -> Result<(), String> {
+    match op {
+        BinaryOperation::Add => math_operations(|x, y| x + y, value, state),
+        BinaryOperation::Subtract => math_operations(|x, y| x - y, value, state),
+        BinaryOperation::Multiply => math_operations(|x, y| x * y, value, state),
+        BinaryOperation::Divide => math_operations(|x, y| x / y, value, state),
+        BinaryOperation::Exponent => math_operations(|x, y| x.powf(y), value, state),
+        BinaryOperation::Modulus => math_operations(|x, y| x % y, value, state),
+        BinaryOperation::Equal => todo!(),
+        BinaryOperation::GreaterThan => todo!(),
+        BinaryOperation::LessThan => todo!(),
+        BinaryOperation::Or => todo!(),
+        BinaryOperation::And => todo!(),
+    }
+}
+
+fn math_operations<F>(math_operation: F, value: Node, state: &mut State) -> Result<(), String>
+where
+    F: Fn(f32, f32) -> f32,
+{
+    match (state.stack.last().unwrap().current.clone(), value) {
+        (Node::Float(float_x), Node::Float(float_y)) => {
+            let new_current = Node::Float(math_operation(float_x, float_y));
+            state.stack.last_mut().unwrap().current = new_current;
+            Ok(())
+        }
+        (Node::Float(float_x), Node::Variable(var_name)) => {
+            let var_value = state
+                .stack
+                .last()
+                .unwrap()
+                .variables
+                .get(&var_name)
+                .unwrap();
+            if let Node::Float(float_y) = var_value {
+                let new_current = Node::Float(math_operation(float_x, *float_y));
+                state.stack.last_mut().unwrap().current = new_current;
+                Ok(())
+            } else {
+                Err("Variable is not float".to_string())
+            }
+        }
+        _ => unreachable!(),
     }
 }
 
