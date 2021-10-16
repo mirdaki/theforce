@@ -2,19 +2,37 @@ use std::collections::HashMap;
 
 use crate::ast::Node;
 
+struct Frame {
+    variables: HashMap<String, Node>,
+    current: Node,
+}
+
+impl Frame {
+    fn new() -> Frame {
+        Frame {
+            variables: HashMap::new(),
+            current: Node::Noop,
+        }
+    }
+}
+
 struct State {
     functions: HashMap<String, Node>,
-    variables: Vec<HashMap<String, Node>>,
-    current: Node,
+    stack: Vec<Frame>,
+}
+
+impl State {
+    fn new() -> State {
+        State {
+            functions: HashMap::new(),
+            stack: vec![Frame::new()],
+        }
+    }
 }
 
 pub fn evaluate(ast: Vec<Node>) -> Result<(), String> {
     let mut main = Node::Noop;
-    let state = &mut State {
-        functions: HashMap::new(),
-        variables: vec![HashMap::new()],
-        current: Node::Noop,
-    };
+    let state = &mut State::new();
 
     for node in ast {
         match &node {
@@ -36,17 +54,19 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
         Node::AssignVariable(_, _, _) => todo!(),
         Node::Binary(_, _) => todo!(),
         Node::Boolean(_) => {
-            state.current = ast;
+            state.stack.last_mut().unwrap().current = ast;
             Ok(())
         }
         Node::CallFunction(_, _) => todo!(),
         Node::DeclareBoolean(name, boolean) => {
             if let Node::Boolean(value) = *boolean {
                 state
-                    .variables
+                    .stack
                     .last_mut()
                     .unwrap()
+                    .variables
                     .insert(name, Node::Boolean(value));
+                // TODO: Decide if replacing an existing var is an error
                 Ok(())
             } else {
                 Err("Not boolean".to_string())
@@ -55,9 +75,10 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
         Node::DeclareFloat(name, float) => {
             if let Node::Float(value) = *float {
                 state
-                    .variables
+                    .stack
                     .last_mut()
                     .unwrap()
+                    .variables
                     .insert(name, Node::Float(value));
                 Ok(())
             } else {
@@ -68,9 +89,10 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
         Node::DeclareString(name, string) => {
             if let Node::String(value) = *string {
                 state
-                    .variables
+                    .stack
                     .last_mut()
                     .unwrap()
+                    .variables
                     .insert(name, Node::String(value));
                 Ok(())
             } else {
@@ -78,7 +100,7 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
             }
         }
         Node::Float(_) => {
-            state.current = ast;
+            state.stack.last_mut().unwrap().current = ast;
             Ok(())
         }
         Node::For(_, _, _) => todo!(),
@@ -91,7 +113,7 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
         }
         Node::Print(node) => {
             evaluate_node(*node, state)?;
-            let value = state.current.clone();
+            let value = state.stack.last().unwrap().current.clone();
             println!("{}", value);
             Ok(())
         }
@@ -100,14 +122,21 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
         Node::ReadFloat(_) => todo!(),
         Node::ReadString(_) => todo!(),
         Node::String(_) => {
-            state.current = ast;
+            state.stack.last_mut().unwrap().current = ast;
             Ok(())
         }
         Node::Unary(_) => todo!(),
         Node::Variable(name) => {
             // Error if not found
-            let value = state.variables.last().unwrap().get(&name).unwrap().clone();
-            state.current = value;
+            let value = state
+                .stack
+                .last_mut()
+                .unwrap()
+                .variables
+                .get(&name)
+                .unwrap()
+                .clone();
+            state.stack.last_mut().unwrap().current = value;
             Ok(())
         }
         Node::While(_, _) => todo!(),
