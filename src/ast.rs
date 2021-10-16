@@ -1,4 +1,3 @@
-#![allow(dead_code)] // TODO: Should disable eventually
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,7 +12,6 @@ pub enum Node {
     DeclareString(String, Box<Node>),
     Float(f32),
     For(Box<Node>, Box<Node>, Vec<Node>),
-    Function(String, Vec<Node>, Vec<Node>),
     If(Box<Node>, Vec<Node>, Vec<Node>),
     Main(Vec<Node>),
     Print(Box<Node>),
@@ -25,6 +23,7 @@ pub enum Node {
     Unary(UnaryOperation),
     Variable(String),
     While(Box<Node>, Vec<Node>),
+    Noop,
 }
 
 #[derive(Debug, Clone, PartialEq)]

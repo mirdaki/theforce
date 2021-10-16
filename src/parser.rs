@@ -23,7 +23,6 @@ pub fn parse(source: &str) -> Result<Vec<Node>, pest::error::Error<Rule>> {
 }
 
 fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
-    dbg!(&pair);
     match pair.as_rule() {
         Rule::Main => {
             let pairs = pair.into_inner();
@@ -47,8 +46,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             for pair in pairs {
                 body.push(build_ast(pair));
             }
-
-            Node::Function(identfier.to_string(), paramaters, body)
+            Node::DeclareFunction(identfier.to_string(), paramaters, body)
         }
         Rule::CallFunctionStatement => {
             let mut pairs = pair.into_inner();
@@ -616,7 +614,7 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![
-                Node::Function(
+                Node::DeclareFunction(
                     "NameTheSystem".to_string(),
                     vec!(Node::Variable("planet".to_string())),
                     vec!(
@@ -665,7 +663,7 @@ mod tests {
         assert_eq!(
             ast.unwrap(),
             vec![
-                Node::Function(
+                Node::DeclareFunction(
                     "TheOdds".to_string(),
                     vec!(Node::Variable("odds".to_string())),
                     vec![
