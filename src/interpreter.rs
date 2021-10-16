@@ -172,11 +172,29 @@ fn evaluate_binary(op: BinaryOperation, value: Node, state: &mut State) -> Resul
         BinaryOperation::Divide => math_operations(|x, y| x / y, value, state),
         BinaryOperation::Exponent => math_operations(|x, y| x.powf(y), value, state),
         BinaryOperation::Modulus => math_operations(|x, y| x % y, value, state),
-        BinaryOperation::Equal => todo!(),
-        BinaryOperation::GreaterThan => todo!(),
-        BinaryOperation::LessThan => todo!(),
-        BinaryOperation::Or => todo!(),
-        BinaryOperation::And => todo!(),
+        BinaryOperation::Equal => {
+            let mut equal_value = value.clone();
+            if let Node::Variable(var_name) = &value {
+                equal_value = state
+                .stack
+                .last()
+                .unwrap()
+                .variables
+                .get(var_name)
+                .unwrap()
+                .clone();
+            };
+            match equal_value {
+                Node::Boolean(_) => equality_bool_operations(|x, y | x == y, value, state),
+                Node::Float(_) => equality_float_operations(|x, y | x.eq(&y), value, state),
+                Node::String(_) => todo!(),
+                _ => unreachable!()
+            }
+        }
+        BinaryOperation::GreaterThan => equality_float_operations(|x, y | x > y, value, state),
+        BinaryOperation::LessThan => equality_float_operations(|x, y | x < y, value, state),
+        BinaryOperation::Or => equality_bool_operations(|x, y | x && y, value, state),
+        BinaryOperation::And => equality_bool_operations(|x, y | x || y, value, state),
     }
 }
 
@@ -204,6 +222,66 @@ where
                 Ok(())
             } else {
                 Err("Variable is not float".to_string())
+            }
+        }
+        _ => unreachable!(),
+    }
+}
+
+fn equality_float_operations<F>(equality_operation: F, value: Node, state: &mut State) -> Result<(), String>
+where
+    F: Fn(f32, f32) -> bool,
+{
+    match (state.stack.last().unwrap().current.clone(), value) {
+        (Node::Float(float_x), Node::Float(float_y)) => {
+            let new_current = Node::Boolean(equality_operation(float_x, float_y));
+            state.stack.last_mut().unwrap().current = new_current;
+            Ok(())
+        }
+        (Node::Float(float_x), Node::Variable(var_name)) => {
+            let var_value = state
+                .stack
+                .last()
+                .unwrap()
+                .variables
+                .get(&var_name)
+                .unwrap();
+            if let Node::Float(float_y) = var_value {
+                let new_current = Node::Boolean(equality_operation(float_x, *float_y));
+                state.stack.last_mut().unwrap().current = new_current;
+                Ok(())
+            } else {
+                Err("Variable is not float".to_string())
+            }
+        }
+        _ => unreachable!(),
+    }
+}
+
+fn equality_bool_operations<F>(bool_operation: F, value: Node, state: &mut State) -> Result<(), String>
+where
+    F: Fn(bool, bool) -> bool,
+{
+    match (state.stack.last().unwrap().current.clone(), value) {
+        (Node::Boolean(bool_x), Node::Boolean(bool_y)) => {
+            let new_current = Node::Boolean(bool_operation(bool_x, bool_y));
+            state.stack.last_mut().unwrap().current = new_current;
+            Ok(())
+        }
+        (Node::Boolean(bool_x), Node::Variable(var_name)) => {
+            let var_value = state
+                .stack
+                .last()
+                .unwrap()
+                .variables
+                .get(&var_name)
+                .unwrap();
+            if let Node::Boolean(bool_y) = var_value {
+                let new_current = Node::Boolean(bool_operation(bool_x, *bool_y));
+                state.stack.last_mut().unwrap().current = new_current;
+                Ok(())
+            } else {
+                Err("Variable is not boolean".to_string())
             }
         }
         _ => unreachable!(),
