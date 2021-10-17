@@ -5,6 +5,7 @@ use crate::ast::{BinaryOperation, Node, UnaryOperation};
 struct Frame {
     variables: HashMap<String, Node>,
     current: Node,
+    loop_flag: Vec<Node>,
 }
 
 impl Frame {
@@ -12,6 +13,7 @@ impl Frame {
         Frame {
             variables: HashMap::new(),
             current: Node::Noop,
+            loop_flag: vec![Node::Noop],
         }
     }
 }
@@ -72,7 +74,8 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
                 .insert(variable_name, new_current);
             Ok(())
         }
-        Node::Binary(_, _) => todo!(),
+        // Taken care of by the assign variable
+        Node::Binary(_, _) => unreachable!(),
         Node::Boolean(_) => {
             state.stack.last_mut().unwrap().current = ast;
             Ok(())
@@ -145,7 +148,8 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
             state.stack.last_mut().unwrap().current = ast;
             Ok(())
         }
-        Node::Unary(_) => todo!(),
+        // Taken care of by the assign variable
+        Node::Unary(_) => unreachable!(),
         Node::Variable(name) => {
             // Error if not found
             let value = state
@@ -159,7 +163,34 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
             state.stack.last_mut().unwrap().current = value;
             Ok(())
         }
-        Node::While(_, _) => todo!(),
+        Node::While(flag, statments) => {
+            state
+                .stack
+                .last_mut()
+                .unwrap()
+                .loop_flag
+                .push(*flag.clone());
+            // TODO: Propagate error
+            let _ = evaluate_node(*flag.clone(), state);
+            let mut continue_loop = match state.stack.last().unwrap().current {
+                Node::Boolean(bool) => bool,
+                Node::Float(float) => float != 0.0,
+                _ => unreachable!(),
+            };
+
+            while continue_loop {
+                for statment in &statments {
+                    evaluate_node(statment.clone(), state)?;
+                }
+                let _ = evaluate_node(*flag.clone(), state);
+                continue_loop = match state.stack.last().unwrap().current {
+                    Node::Boolean(bool) => bool,
+                    Node::Float(float) => float != 0.0,
+                    _ => unreachable!(),
+                };
+            }
+            Ok(())
+        }
         Node::Noop => Ok(()),
     }
 }
