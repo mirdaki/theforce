@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::ast::{BinaryOperation, Node};
+use crate::ast::{BinaryOperation, Node, UnaryOperation};
 
 struct Frame {
     variables: HashMap<String, Node>,
@@ -54,12 +54,12 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
         Node::AssignVariable(variable_name, first_value, operations) => {
             // TODO: Check if value is actually a value?
             // Place value at top of stack
-            let _ = evaluate_node(*first_value, state); 
+            let _ = evaluate_node(*first_value, state);
             for operation in operations {
                 // TOOD: Actual error message
                 let _ = match operation {
                     Node::Binary(operation, value) => evaluate_binary(operation, *value, state),
-                    Node::Unary(operation) => todo!(),
+                    Node::Unary(operation) => evaluate_unary(operation, state),
                     _ => Err("Invalid operation".to_string()),
                 };
             }
@@ -176,25 +176,25 @@ fn evaluate_binary(op: BinaryOperation, value: Node, state: &mut State) -> Resul
             let mut equal_value = value.clone();
             if let Node::Variable(var_name) = &value {
                 equal_value = state
-                .stack
-                .last()
-                .unwrap()
-                .variables
-                .get(var_name)
-                .unwrap()
-                .clone();
+                    .stack
+                    .last()
+                    .unwrap()
+                    .variables
+                    .get(var_name)
+                    .unwrap()
+                    .clone();
             };
             match equal_value {
-                Node::Boolean(_) => equality_bool_operations(|x, y | x == y, value, state),
-                Node::Float(_) => equality_float_operations(|x, y | x.eq(&y), value, state),
+                Node::Boolean(_) => equality_bool_operations(|x, y| x == y, value, state),
+                Node::Float(_) => equality_float_operations(|x, y| x.eq(&y), value, state),
                 Node::String(_) => todo!(),
-                _ => unreachable!()
+                _ => unreachable!(),
             }
         }
-        BinaryOperation::GreaterThan => equality_float_operations(|x, y | x > y, value, state),
-        BinaryOperation::LessThan => equality_float_operations(|x, y | x < y, value, state),
-        BinaryOperation::Or => equality_bool_operations(|x, y | x && y, value, state),
-        BinaryOperation::And => equality_bool_operations(|x, y | x || y, value, state),
+        BinaryOperation::GreaterThan => equality_float_operations(|x, y| x > y, value, state),
+        BinaryOperation::LessThan => equality_float_operations(|x, y| x < y, value, state),
+        BinaryOperation::Or => equality_bool_operations(|x, y| x || y, value, state),
+        BinaryOperation::And => equality_bool_operations(|x, y| x && y, value, state),
     }
 }
 
@@ -228,7 +228,11 @@ where
     }
 }
 
-fn equality_float_operations<F>(equality_operation: F, value: Node, state: &mut State) -> Result<(), String>
+fn equality_float_operations<F>(
+    equality_operation: F,
+    value: Node,
+    state: &mut State,
+) -> Result<(), String>
 where
     F: Fn(f32, f32) -> bool,
 {
@@ -258,7 +262,11 @@ where
     }
 }
 
-fn equality_bool_operations<F>(bool_operation: F, value: Node, state: &mut State) -> Result<(), String>
+fn equality_bool_operations<F>(
+    bool_operation: F,
+    value: Node,
+    state: &mut State,
+) -> Result<(), String>
 where
     F: Fn(bool, bool) -> bool,
 {
@@ -285,6 +293,21 @@ where
             }
         }
         _ => unreachable!(),
+    }
+}
+
+fn evaluate_unary(op: UnaryOperation, state: &mut State) -> Result<(), String> {
+    match op {
+        UnaryOperation::Not => {
+            match state.stack.last().unwrap().current.clone() {
+                Node::Boolean(bool) => {
+                    let new_current = Node::Boolean(!bool);
+                    state.stack.last_mut().unwrap().current = new_current;
+                }
+                _ => unreachable!(),
+            }
+            Ok(())
+        }
     }
 }
 
