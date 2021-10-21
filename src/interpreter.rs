@@ -126,7 +126,86 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
             state.stack.last_mut().unwrap().current = ast;
             Ok(())
         }
-        Node::For(_, _, _) => todo!(),
+        Node::For(max, flag, statments)
+            if matches!(&*max, Node::Float(_)) && matches!(&*flag, Node::Variable(_)) =>
+        {
+            // Will be initiliaed, because of the match guard
+            let mut max_value = 0.0;
+            if let Node::Float(max) = *max {
+                max_value = max;
+            }
+
+            let mut flag_var_name = "".to_string();
+            if let Node::Variable(ref var_name) = *flag {
+                flag_var_name = var_name.clone();
+            }
+
+            // Get the variable value
+            let _ = evaluate_node(
+                state
+                    .stack
+                    .last()
+                    .unwrap()
+                    .variables
+                    .get(&flag_var_name)
+                    .unwrap()
+                    .clone(),
+                state,
+            );
+
+            let mut flag_value =
+                if let Node::Float(value) = state.stack.last().unwrap().current.clone() {
+                    value
+                } else {
+                    return Err("Flag not a float".to_string());
+                };
+
+            // Check if should loop
+            let mut continue_loop = !flag_value.eq(&max_value);
+
+            // Loop
+            while continue_loop {
+                for statment in &statments {
+                    evaluate_node(statment.clone(), state)?;
+                }
+
+                // Get the variable value
+                let _ = evaluate_node(
+                    state
+                        .stack
+                        .last()
+                        .unwrap()
+                        .variables
+                        .get(&flag_var_name)
+                        .unwrap()
+                        .clone(),
+                    state,
+                );
+
+                flag_value = if let Node::Float(value) = state.stack.last().unwrap().current.clone()
+                {
+                    value
+                } else {
+                    return Err("Flag not a float".to_string());
+                };
+
+                // Increment variable value
+                flag_value += 1.0;
+
+                // Set the variable value
+                state
+                    .stack
+                    .last_mut()
+                    .unwrap()
+                    .variables
+                    .insert(flag_var_name.clone(), Node::Float(flag_value))
+                    .unwrap();
+
+                // Check if should loop
+                continue_loop = !flag_value.eq(&max_value);
+            }
+            Ok(())
+        }
         Node::If(_, _, _) => todo!(),
         Node::Main(statments) => {
             for statment in statments {
@@ -171,7 +250,7 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
                 .loop_flag
                 .push(*flag.clone());
             // TODO: Propagate error
-            let _ = evaluate_node(*flag.clone(), state);
+            let _ = evaluate_node(*flag, state);
             let mut continue_loop = match state.stack.last().unwrap().current {
                 Node::Boolean(bool) => bool,
                 Node::Float(float) => float != 0.0,
@@ -182,16 +261,19 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
                 for statment in &statments {
                     evaluate_node(statment.clone(), state)?;
                 }
-                let _ = evaluate_node(*flag.clone(), state);
+                let flag = state.stack.last_mut().unwrap().loop_flag.last().unwrap();
+                let _ = evaluate_node(flag.clone(), state);
                 continue_loop = match state.stack.last().unwrap().current {
                     Node::Boolean(bool) => bool,
                     Node::Float(float) => float != 0.0,
                     _ => unreachable!(),
                 };
             }
+            state.stack.last_mut().unwrap().loop_flag.pop();
             Ok(())
         }
         Node::Noop => Ok(()),
+        _ => Err("Statment node valid".to_string()),
     }
 }
 
