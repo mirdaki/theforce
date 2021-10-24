@@ -206,7 +206,30 @@ fn evaluate_node(ast: Node, state: &mut State) -> Result<(), String> {
             }
             Ok(())
         }
-        Node::If(_, _, _) => todo!(),
+        Node::If(flag, true_statments, false_statments) => {
+            // Processes flag
+            evaluate_node(*flag, state)?;
+
+            // Only accept boolean results
+            let if_flag = if let Node::Boolean(bool) = state.stack.last().unwrap().current {
+                bool
+            } else {
+                return Err("Not boolean.".to_string());
+            };
+
+            // Choose a branch. False branch may not exist, but should be empty from parser
+            let statments = if if_flag {
+                true_statments
+            } else {
+                false_statments
+            };
+
+            for statment in statments {
+                evaluate_node(statment, state)?;
+            }
+
+            Ok(())
+        }
         Node::Main(statments) => {
             for statment in statments {
                 evaluate_node(statment, state)?;
