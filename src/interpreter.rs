@@ -18,9 +18,10 @@ impl Frame {
     }
 }
 
+#[derive(Clone)]
 struct Function {
-    parameters: Vec::<Node>,
-    body: Vec::<Node>,
+    parameters: Vec<Node>,
+    body: Vec<Node>,
     void: bool,
 }
 
@@ -40,7 +41,7 @@ impl State {
     fn get_current(&self) -> Result<&Node, String> {
         match &self.stack.last() {
             Some(frame) => Ok(&frame.current),
-            _ => Err("Current not found".to_string())
+            _ => Err("Current not found".to_string()),
         }
     }
 
@@ -78,7 +79,7 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
         Node::AssignVariable(variable_name, first_value, operations) => {
             // TODO: Check if value is actually a value?
             // Place value at top of stack
-            let _ = evaluate_node(first_value, state);
+            evaluate_node(first_value, state)?;
             for operation in operations {
                 // TOOD: Actual error message
                 let _ = match operation {
@@ -103,45 +104,52 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
             Ok(())
         }
         Node::CallFunction(name, arguments) => {
-            // let function = state.functions.get(name).unwrap();
+            // Validate the function exists
+            let function = if let Some(function) = state.functions.get(name) {
+                function.clone()
+            } else {
+                return Err("Function not defined".to_string());
+            };
 
             // // Validate the inputs match
-            // if arguments.len() != function.parameters.len() {
-            //     return Err("Paramaters do not match arguments".to_string())
-            // }
-            
-            // // Create a new frame in the stack
-            // let mut new_frame = Frame::new();
-            // for (argument, parameter) in arguments.iter().zip(function.parameters.iter()) {
-            //     // Processes argument
-            //     evaluate_node(argument, state)?;
-            //     let current = state.stack.last().unwrap().current;
+            if arguments.len() != function.parameters.len() {
+                return Err("Paramaters do not match arguments".to_string());
+            }
 
-            //     // Validate that arguments and parameters are the right types
-            //     let parameter_name = if let Node::String(name) = parameter {
-            //         name
-            //     } else {
-            //         return Err("Parameter is not a string".to_string())
-            //     };
+            // Create a new frame in the stack
+            let mut new_frame = Frame::new();
+            for (argument, parameter) in arguments.iter().zip(function.parameters.iter()) {
+                // Processes argument
+                evaluate_node(argument, state)?;
 
-            //     if let Node::Float(_) | Node::Boolean(_) | Node::String(_) = current {
-            //         new_frame.variables.insert(parameter_name.clone(), current);
-            //     } else {
-            //         return Err("Argument not a value".to_string());
-            //     }
-            // }
+                // Validate that arguments and parameters are the right types
+                let parameter_name = if let Node::Variable(name) = parameter {
+                    name
+                } else {
+                    return Err("Parameter is not a string".to_string());
+                };
 
-            // // Evaluate the body
-            // for statment in &function.body {
-            //     evaluate_node(statment, state)?;
-            // }
+                if let Node::Float(_) | Node::Boolean(_) | Node::String(_) = state.get_current()? {
+                    new_frame
+                        .variables
+                        .insert(parameter_name.clone(), state.get_current()?.clone());
+                } else {
+                    return Err("Argument not a value".to_string());
+                }
+            }
+            state.stack.push(new_frame);
 
-            // // Pop the stack frame. If non-void, set the return value to the new current
-            // let possible_return = state.stack.last().unwrap().current;
-            // state.stack.pop();
-            // if !function.void {
-            //     state.stack.last_mut().unwrap().current = possible_return;
-            // }
+            // Evaluate the body
+            for statment in &function.body {
+                evaluate_node(statment, state)?;
+            }
+
+            // Pop the stack frame. If non-void, set the return value to the new current
+            let possible_return = state.get_current()?.clone();
+            state.stack.pop();
+            if !function.void {
+                state.set_current(possible_return);
+            }
 
             Ok(())
         }
@@ -194,11 +202,11 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
         Node::For(max, flag, statments) => {
             // Will be initiliaed, because of the match guard
             let max_value = if let Node::Float(max) = **max {
-                 max
+                max
             } else {
-                return Err("For max not float".to_string())
+                return Err("For max not float".to_string());
             };
-            
+
             let flag_var_name = if let Node::Variable(ref var_name) = **flag {
                 var_name
             } else {
@@ -206,7 +214,7 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
             };
 
             // Get the variable value
-            let _ = evaluate_node(
+            evaluate_node(
                 &state
                     .stack
                     .last()
@@ -216,14 +224,13 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
                     .unwrap()
                     .clone(),
                 state,
-            );
+            )?;
 
-            let mut flag_value =
-                if let Node::Float(value) = state.get_current()?.clone() {
-                    value
-                } else {
-                    return Err("Flag not a float".to_string());
-                };
+            let mut flag_value = if let Node::Float(value) = state.get_current()?.clone() {
+                value
+            } else {
+                return Err("Flag not a float".to_string());
+            };
 
             // Check if should loop
             let mut continue_loop = !flag_value.eq(&max_value);
@@ -235,7 +242,7 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
                 }
 
                 // Get the variable value
-                let _ = evaluate_node(
+                evaluate_node(
                     &state
                         .stack
                         .last()
@@ -245,10 +252,9 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
                         .unwrap()
                         .clone(),
                     state,
-                );
+                )?;
 
-                flag_value = if let Node::Float(value) = state.get_current()?.clone()
-                {
+                flag_value = if let Node::Float(value) = state.get_current()?.clone() {
                     value
                 } else {
                     return Err("Flag not a float".to_string());
@@ -307,12 +313,21 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
             println!("{}", value);
             Ok(())
         }
-        Node::Return(_) => todo!(),
+        Node::Return(node) => {
+            evaluate_node(node, state)?;
+
+            // Validate it's a value
+            if let Node::Float(_) | Node::Boolean(_) | Node::String(_) = state.get_current()? {
+                Ok(())
+            } else {
+                Err("Argument not a value".to_string())
+            }
+        }
         Node::ReadBoolean(_) => todo!(),
         Node::ReadFloat(_) => todo!(),
         Node::ReadString(_) => todo!(),
         Node::String(_) => {
-            state.set_current( ast.clone());
+            state.set_current(ast.clone());
             Ok(())
         }
         // Taken care of by the assign variable
@@ -338,7 +353,7 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
                 .loop_flag
                 .push(*flag.clone());
             // TODO: Propagate error
-            let _ = evaluate_node(flag, state);
+            evaluate_node(flag, state)?;
             let mut continue_loop = match state.get_current()? {
                 Node::Boolean(bool) => *bool,
                 Node::Float(float) => *float != 0.0,
@@ -347,10 +362,17 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
 
             while continue_loop {
                 for statment in statments {
-                    let _ = evaluate_node(statment, state);
+                    evaluate_node(statment, state)?;
                 }
-                let flag = state.stack.last().unwrap().loop_flag.last().unwrap().clone();
-                let _ = evaluate_node(&flag, state);
+                let flag = state
+                    .stack
+                    .last()
+                    .unwrap()
+                    .loop_flag
+                    .last()
+                    .unwrap()
+                    .clone();
+                evaluate_node(&flag, state)?;
                 continue_loop = match *state.get_current()? {
                     Node::Boolean(bool) => bool,
                     Node::Float(float) => float != 0.0,
@@ -409,13 +431,7 @@ where
             Ok(())
         }
         (Node::Float(float_x), Node::Variable(var_name)) => {
-            let var_value = state
-                .stack
-                .last()
-                .unwrap()
-                .variables
-                .get(var_name)
-                .unwrap();
+            let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
             if let Node::Float(float_y) = var_value {
                 let new_current = Node::Float(math_operation(*float_x, *float_y));
                 state.set_current(new_current);
@@ -443,13 +459,7 @@ where
             Ok(())
         }
         (Node::Float(float_x), Node::Variable(var_name)) => {
-            let var_value = state
-                .stack
-                .last()
-                .unwrap()
-                .variables
-                .get(var_name)
-                .unwrap();
+            let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
             if let Node::Float(float_y) = var_value {
                 let new_current = Node::Boolean(equality_operation(*float_x, *float_y));
                 state.set_current(new_current);
@@ -477,13 +487,7 @@ where
             Ok(())
         }
         (Node::Boolean(bool_x), Node::Variable(var_name)) => {
-            let var_value = state
-                .stack
-                .last()
-                .unwrap()
-                .variables
-                .get(var_name)
-                .unwrap();
+            let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
             if let Node::Boolean(bool_y) = var_value {
                 let new_current = Node::Boolean(bool_operation(*bool_x, *bool_y));
                 state.set_current(new_current);

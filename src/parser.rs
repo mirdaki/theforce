@@ -32,22 +32,8 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             }
             Node::Main(body)
         }
-        Rule::VoidFunction | Rule::NonVoidFunction => {
-            let mut pairs = pair.into_inner();
-            let identfier = pairs.next().unwrap().as_str();
-            let mut paramaters = Vec::<Node>::new();
-            let maybe_params = pairs.next().unwrap();
-            if Rule::Parameters == maybe_params.as_rule() {
-                for pair in maybe_params.into_inner() {
-                    paramaters.push(build_ast(pair));
-                }
-            }
-            let mut body = Vec::<Node>::new();
-            for pair in pairs {
-                body.push(build_ast(pair));
-            }
-            Node::DeclareFunction(identfier.to_string(), paramaters, body)
-        }
+        Rule::VoidFunction => build_function(pair, true),
+        Rule::NonVoidFunction => build_function(pair, false),
         Rule::CallFunctionStatement => {
             let mut pairs = pair.into_inner();
             let identfier = pairs.next().unwrap().as_str();
@@ -249,6 +235,24 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
         }
         unknown => panic!("Unknown expr: {:?}", unknown),
     }
+}
+
+fn build_function(pair: pest::iterators::Pair<Rule>, void: bool) -> Node {
+    let mut pairs = pair.into_inner();
+    let identfier = pairs.next().unwrap().as_str();
+    let mut paramaters = Vec::<Node>::new();
+    let maybe_params = pairs.next().unwrap();
+    if Rule::Parameters == maybe_params.as_rule() {
+        for pair in maybe_params.into_inner() {
+            paramaters.push(build_ast(pair));
+        }
+    }
+    let mut body = Vec::<Node>::new();
+    for pair in pairs {
+        body.push(build_ast(pair));
+    }
+
+    Node::DeclareFunction(identfier.to_string(), paramaters, body, void)
 }
 
 #[cfg(test)]
@@ -621,7 +625,8 @@ mod tests {
                         Node::Print(Box::new(Node::String("Goodbye".to_string()))),
                         Node::Print(Box::new(Node::Variable("planet".to_string()))),
                         Node::Print(Box::new(Node::String("Deathstar noise".to_string())))
-                    )
+                    ),
+                    true
                 ),
                 Node::Main(vec!(Node::CallFunction(
                     "NameTheSystem".to_string(),
@@ -639,7 +644,7 @@ mod tests {
 
             What a piece of junk! survive
                 I am your father. odds
-                Never tell me the odds! 3719
+                Never tell me the odds! 3720
                 You're a Jedi too, nice to meet you. 0
             The garbage will do.
             
@@ -674,13 +679,14 @@ mod tests {
                             vec![
                                 Node::Binary(
                                     BinaryOperation::Modulus,
-                                    Box::new(Node::Float(3719.0))
+                                    Box::new(Node::Float(3720.0))
                                 ),
                                 Node::Binary(BinaryOperation::Equal, Box::new(Node::Float(0.0))),
                             ]
                         ),
                         Node::Return(Box::new(Node::Variable("survive".to_string())))
-                    ]
+                    ],
+                    false
                 ),
                 Node::Main(vec![
                     Node::DeclareBoolean("survive".to_string(), Box::new(Node::Boolean(false))),
