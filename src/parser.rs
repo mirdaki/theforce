@@ -748,6 +748,8 @@ mod tests {
             Whoosa are youssa? 0.0
 
             Looking, found someone I would say you have. jawa
+
+            The Sacred Texts! jawa
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -757,7 +759,8 @@ mod tests {
             ast.unwrap(),
             vec![Node::Main(vec![
                 Node::DeclareFloat("jawa".to_string(), Box::new(Node::Float(0.0))),
-                Node::ReadFloat(Box::new(Node::Variable("jawa".to_string())))
+                Node::ReadFloat(Box::new(Node::Variable("jawa".to_string()))),
+                Node::Print(Box::new(Node::Variable("jawa".to_string()))),
             ])]
         );
 
@@ -767,6 +770,8 @@ mod tests {
             Whoosa are youssa? ""
 
             Now this is pod racing. ewok
+
+            The Sacred Texts! ewok
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -776,7 +781,8 @@ mod tests {
             ast.unwrap(),
             vec![Node::Main(vec![
                 Node::DeclareString("ewok".to_string(), Box::new(Node::String("".to_string()))),
-                Node::ReadString(Box::new(Node::Variable("ewok".to_string())))
+                Node::ReadString(Box::new(Node::Variable("ewok".to_string()))),
+                Node::Print(Box::new(Node::Variable("ewok".to_string()))),
             ])]
         );
 
@@ -786,6 +792,8 @@ mod tests {
             Whoosa are youssa? From a certain point of view.
 
             I hope you know what you’re doing. darkSide
+
+            The Sacred Texts! darkSide
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -795,7 +803,8 @@ mod tests {
             ast.unwrap(),
             vec![Node::Main(vec![
                 Node::DeclareBoolean("darkSide".to_string(), Box::new(Node::Boolean(true))),
-                Node::ReadBoolean(Box::new(Node::Variable("darkSide".to_string())))
+                Node::ReadBoolean(Box::new(Node::Variable("darkSide".to_string()))),
+                Node::Print(Box::new(Node::Variable("darkSide".to_string()))),
             ])]
         );
     }

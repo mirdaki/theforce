@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    io::{self, Read, Write},
+    io::{Read, Write},
 };
 
 use crate::ast::{BinaryOperation, Node, UnaryOperation};
@@ -347,9 +347,99 @@ where
                 Err("Argument not a value".to_string())
             }
         }
-        Node::ReadBoolean(_) => todo!(),
-        Node::ReadFloat(_) => todo!(),
-        Node::ReadString(_) => todo!(),
+        Node::ReadBoolean(variable) => {
+            // Validate input is variable
+            let variable_name = if let Node::Variable(variable_name) = &**variable {
+                variable_name.clone()
+            } else {
+                return Err("Not a variable".to_string());
+            };
+
+            let mut input = Vec::<u8>::new();
+            if state.reader.read_to_end(&mut input).is_err() {
+                return Err("Unable to read string".to_string());
+            }
+
+            let input = if let Ok(input) = std::str::from_utf8(&input) {
+                input.to_string()
+            } else {
+                return Err("Unable to convert string".to_string());
+            };
+
+            let input = if let Ok(input) = input.parse::<bool>() {
+                input
+            } else {
+                return Err("Unable to convert bool".to_string());
+            };
+
+            state
+                .stack
+                .last_mut()
+                .unwrap()
+                .variables
+                .insert(variable_name, Node::Boolean(input));
+            Ok(())
+        }
+        Node::ReadFloat(variable) => {
+            // Validate input is variable
+            let variable_name = if let Node::Variable(variable_name) = &**variable {
+                variable_name.clone()
+            } else {
+                return Err("Not a variable".to_string());
+            };
+
+            let mut input = Vec::<u8>::new();
+            if state.reader.read_to_end(&mut input).is_err() {
+                return Err("Unable to read string".to_string());
+            }
+
+            let input = if let Ok(input) = std::str::from_utf8(&input) {
+                input.to_string()
+            } else {
+                return Err("Unable to convert string".to_string());
+            };
+
+            let input = if let Ok(input) = input.parse::<f32>() {
+                input
+            } else {
+                return Err("Unable to convert float".to_string());
+            };
+
+            state
+                .stack
+                .last_mut()
+                .unwrap()
+                .variables
+                .insert(variable_name, Node::Float(input));
+            Ok(())
+        }
+        Node::ReadString(variable) => {
+            // Validate input is variable
+            let variable_name = if let Node::Variable(variable_name) = &**variable {
+                variable_name.clone()
+            } else {
+                return Err("Not a variable".to_string());
+            };
+
+            let mut input = Vec::<u8>::new();
+            if state.reader.read_to_end(&mut input).is_err() {
+                return Err("Unable to read string".to_string());
+            }
+
+            let input = if let Ok(input) = std::str::from_utf8(&input) {
+                input.to_string()
+            } else {
+                return Err("Unable to convert string".to_string());
+            };
+
+            state
+                .stack
+                .last_mut()
+                .unwrap()
+                .variables
+                .insert(variable_name, Node::String(input));
+            Ok(())
+        }
         Node::String(_) => {
             state.set_current(ast.clone())?;
             Ok(())
@@ -563,6 +653,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::io;
+
     use super::*;
 
     #[test]
@@ -834,6 +926,7 @@ mod tests {
         let output = String::from_utf8(output).expect("Not UTF-8");
         assert_eq!(output, "Goodbye\nAlderaan\nDeathstar noise\n");
 
+
         let input = io::stdin();
         let mut output = Vec::new();
         let ast = vec![
@@ -869,6 +962,53 @@ mod tests {
         ];
 
         let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "false\n");
+    }
+
+    #[test]
+    fn input() {
+        let input = "3.14";
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("jawa".to_string(), Box::new(Node::Float(0.0))),
+            Node::ReadFloat(Box::new(Node::Variable("jawa".to_string()))),
+            Node::Print(Box::new(Node::Variable("jawa".to_string()))),
+        ])];
+
+        let result = evaluate(ast, input.as_bytes(), &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "3.14\n");
+
+
+        let input = "Wicket";
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+                Node::DeclareString("ewok".to_string(), Box::new(Node::String("".to_string()))),
+                Node::ReadString(Box::new(Node::Variable("ewok".to_string()))),
+                Node::Print(Box::new(Node::Variable("ewok".to_string()))),
+            ])];
+
+        let result = evaluate(ast, input.as_bytes(), &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "Wicket\n");
+
+
+        let input = "false";
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareBoolean("darkSide".to_string(), Box::new(Node::Boolean(true))),
+            Node::ReadBoolean(Box::new(Node::Variable("darkSide".to_string()))),
+            Node::Print(Box::new(Node::Variable("darkSide".to_string()))),
+        ])];
+
+        let result = evaluate(ast, input.as_bytes(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
