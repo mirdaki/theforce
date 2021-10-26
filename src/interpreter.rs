@@ -926,7 +926,6 @@ mod tests {
         let output = String::from_utf8(output).expect("Not UTF-8");
         assert_eq!(output, "Goodbye\nAlderaan\nDeathstar noise\n");
 
-
         let input = io::stdin();
         let mut output = Vec::new();
         let ast = vec![
@@ -984,21 +983,19 @@ mod tests {
         let output = String::from_utf8(output).expect("Not UTF-8");
         assert_eq!(output, "3.14\n");
 
-
         let input = "Wicket";
         let mut output = Vec::new();
         let ast = vec![Node::Main(vec![
-                Node::DeclareString("ewok".to_string(), Box::new(Node::String("".to_string()))),
-                Node::ReadString(Box::new(Node::Variable("ewok".to_string()))),
-                Node::Print(Box::new(Node::Variable("ewok".to_string()))),
-            ])];
+            Node::DeclareString("ewok".to_string(), Box::new(Node::String("".to_string()))),
+            Node::ReadString(Box::new(Node::Variable("ewok".to_string()))),
+            Node::Print(Box::new(Node::Variable("ewok".to_string()))),
+        ])];
 
         let result = evaluate(ast, input.as_bytes(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
         assert_eq!(output, "Wicket\n");
-
 
         let input = "false";
         let mut output = Vec::new();
