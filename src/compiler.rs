@@ -1,8 +1,8 @@
-use inkwell::OptimizationLevel;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::execution_engine::{ExecutionEngine, JitFunction};
 use inkwell::module::Module;
+use inkwell::OptimizationLevel;
 
 use std::error::Error;
 
@@ -54,7 +54,9 @@ pub fn not_main() -> Result<(), Box<dyn Error>> {
         execution_engine,
     };
 
-    let sum = codegen.jit_compile_sum().ok_or("Unable to JIT compile `sum`")?;
+    let sum = codegen
+        .jit_compile_sum()
+        .ok_or("Unable to JIT compile `sum`")?;
 
     let x = 1u64;
     let y = 2u64;

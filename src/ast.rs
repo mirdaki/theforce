@@ -1,4 +1,3 @@
-#![allow(dead_code)] // TODO: Should disable eventually
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -9,11 +8,10 @@ pub enum Node {
     CallFunction(String, Vec<Node>),
     DeclareBoolean(String, Box<Node>),
     DeclareFloat(String, Box<Node>),
-    DeclareFunction(String, Vec<Node>, Vec<Node>),
+    DeclareFunction(String, Vec<Node>, Vec<Node>, bool),
     DeclareString(String, Box<Node>),
     Float(f32),
     For(Box<Node>, Box<Node>, Vec<Node>),
-    Function(String, Vec<Node>, Vec<Node>),
     If(Box<Node>, Vec<Node>, Vec<Node>),
     Main(Vec<Node>),
     Print(Box<Node>),
@@ -25,6 +23,7 @@ pub enum Node {
     Unary(UnaryOperation),
     Variable(String),
     While(Box<Node>, Vec<Node>),
+    Noop,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -53,7 +52,7 @@ impl fmt::Display for Node {
             Node::Float(n) => write!(f, "{}", n),
             Node::String(s) => write!(f, "{}", s),
             Node::Boolean(b) => write!(f, "{}", b),
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
