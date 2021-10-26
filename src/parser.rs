@@ -283,6 +283,8 @@ mod tests {
         Do it!
             Yoda, you seek Yoda. jawa
             Whoosa are youssa? -13.2
+
+            The Sacred Texts! jawa
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -290,16 +292,18 @@ mod tests {
 
         assert_eq!(
             ast.unwrap(),
-            vec![Node::Main(vec!(Node::DeclareFloat(
-                "jawa".to_string(),
-                Box::new(Node::Float(-13.2))
-            )))]
+            vec![Node::Main(vec!(
+                Node::DeclareFloat("jawa".to_string(), Box::new(Node::Float(-13.2)),),
+                Node::Print(Box::new(Node::Variable("jawa".to_string()))),
+            ))]
         );
 
         let source = r#"
         Do it!
             Size matters not. ewok
             Whoosa are youssa? "Nub Nub"
+
+            The Sacred Texts! ewok
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -307,16 +311,21 @@ mod tests {
 
         assert_eq!(
             ast.unwrap(),
-            vec![Node::Main(vec!(Node::DeclareString(
-                "ewok".to_string(),
-                Box::new(Node::String("Nub Nub".to_string()))
-            )))]
+            vec![Node::Main(vec!(
+                Node::DeclareString(
+                    "ewok".to_string(),
+                    Box::new(Node::String("Nub Nub".to_string()))
+                ),
+                Node::Print(Box::new(Node::Variable("ewok".to_string()))),
+            ))]
         );
 
         let source = r#"
         Do it!
             I am the senate! darkSide
             Whoosa are youssa? From a certain point of view.
+
+            The Sacred Texts! darkSide
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -324,10 +333,10 @@ mod tests {
 
         assert_eq!(
             ast.unwrap(),
-            vec![Node::Main(vec!(Node::DeclareBoolean(
-                "darkSide".to_string(),
-                Box::new(Node::Boolean(true))
-            )))]
+            vec![Node::Main(vec!(
+                Node::DeclareBoolean("darkSide".to_string(), Box::new(Node::Boolean(true))),
+                Node::Print(Box::new(Node::Variable("darkSide".to_string()))),
+            ))]
         );
     }
 
@@ -347,6 +356,8 @@ mod tests {
                 Unlimited power! 2
                 Never tell me the odds! 10
             The garbage will do.
+
+            The Sacred Texts! porg
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -367,7 +378,8 @@ mod tests {
                         Node::Binary(BinaryOperation::Exponent, Box::new(Node::Float(2.0))),
                         Node::Binary(BinaryOperation::Modulus, Box::new(Node::Float(10.0))),
                     )
-                )
+                ),
+                Node::Print(Box::new(Node::Variable("porg".to_string()))),
             ))]
         );
     }
@@ -393,15 +405,21 @@ mod tests {
                 There is always a bigger fish. anakin
             The garbage will do.
 
+            The Sacred Texts! midichlorian
+
             What a piece of junk! midichlorian
                 I am your father. anakin
                 Impressive. Most impressive. leia
             The garbage will do.
 
+            The Sacred Texts! midichlorian
+
             What a piece of junk! midichlorian
                 I am your father. leia
                 You're a Jedi too, nice to meet you. luke
             The garbage will do.
+
+            The Sacred Texts! midichlorian
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -422,6 +440,7 @@ mod tests {
                         Box::new(Node::Variable("anakin".to_string()))
                     ),)
                 ),
+                Node::Print(Box::new(Node::Variable("midichlorian".to_string()))),
                 Node::AssignVariable(
                     "midichlorian".to_string(),
                     Box::new(Node::Variable("anakin".to_string())),
@@ -430,6 +449,7 @@ mod tests {
                         Box::new(Node::Variable("leia".to_string()))
                     ),)
                 ),
+                Node::Print(Box::new(Node::Variable("midichlorian".to_string()))),
                 Node::AssignVariable(
                     "midichlorian".to_string(),
                     Box::new(Node::Variable("leia".to_string())),
@@ -438,6 +458,7 @@ mod tests {
                         Box::new(Node::Variable("luke".to_string()))
                     ),)
                 ),
+                Node::Print(Box::new(Node::Variable("midichlorian".to_string()))),
             ))]
         );
     }
@@ -460,15 +481,21 @@ mod tests {
                 As you wish. darkside
             The garbage will do.
 
+            The Sacred Texts! revan
+
             What a piece of junk! revan
                 I am your father. revan
                 There is another. lightside
             The garbage will do.
 
+            The Sacred Texts! revan
+
             What a piece of junk! revan
                 I am your father. revan
                 Always with you what cannot be done.
             The garbage will do.
+
+            The Sacred Texts! revan
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -488,6 +515,7 @@ mod tests {
                         Box::new(Node::Variable("darkside".to_string()))
                     ),)
                 ),
+                Node::Print(Box::new(Node::Variable("revan".to_string()))),
                 Node::AssignVariable(
                     "revan".to_string(),
                     Box::new(Node::Variable("revan".to_string())),
@@ -496,11 +524,13 @@ mod tests {
                         Box::new(Node::Variable("lightside".to_string()))
                     ),)
                 ),
+                Node::Print(Box::new(Node::Variable("revan".to_string()))),
                 Node::AssignVariable(
                     "revan".to_string(),
                     Box::new(Node::Variable("revan".to_string())),
                     vec!(Node::Unary(UnaryOperation::Not),)
                 ),
+                Node::Print(Box::new(Node::Variable("revan".to_string()))),
             ))]
         );
     }
@@ -513,6 +543,8 @@ mod tests {
             Whoosa are youssa? 3
 
             Here we go again. deathStars
+                The Sacred Texts! deathStars
+
                 What a piece of junk! deathStars
                     I am your father. deathStars
                     Proceed with the countdown. 1
@@ -529,14 +561,17 @@ mod tests {
                 Node::DeclareFloat("deathStars".to_string(), Box::new(Node::Float(3.0))),
                 Node::While(
                     Box::new(Node::Variable("deathStars".to_string())),
-                    vec!(Node::AssignVariable(
-                        "deathStars".to_string(),
-                        Box::new(Node::Variable("deathStars".to_string())),
-                        vec!(Node::Binary(
-                            BinaryOperation::Subtract,
-                            Box::new(Node::Float(1.0))
-                        ),)
-                    )),
+                    vec![
+                        Node::Print(Box::new(Node::Variable("deathStars".to_string()))),
+                        Node::AssignVariable(
+                            "deathStars".to_string(),
+                            Box::new(Node::Variable("deathStars".to_string())),
+                            vec!(Node::Binary(
+                                BinaryOperation::Subtract,
+                                Box::new(Node::Float(1.0))
+                            ),)
+                        )
+                    ],
                 )
             ))]
         );
@@ -660,6 +695,7 @@ mod tests {
                 I’ll try spinning, thats a good trick. 52
             The garbage will do.
 
+            The Sacred Texts! survive
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -697,7 +733,8 @@ mod tests {
                             vec!(Node::Float(52.0))
                         )),
                         vec!()
-                    )
+                    ),
+                    Node::Print(Box::new(Node::Variable("survive".to_string()))),
                 ])
             ]
         );

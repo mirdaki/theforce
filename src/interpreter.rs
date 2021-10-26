@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    io::{self, Read, Write},
+};
 
 use crate::ast::{BinaryOperation, Node, UnaryOperation};
 
@@ -25,34 +28,52 @@ struct Function {
     void: bool,
 }
 
-struct State {
+struct State<R, W> {
     functions: HashMap<String, Function>,
     stack: Vec<Frame>,
+    reader: R,
+    writer: W,
 }
 
-impl State {
-    fn new() -> State {
+impl<R, W> State<R, W>
+where
+    R: Read,
+    W: Write,
+{
+    fn new(reader: R, writer: W) -> State<R, W> {
         State {
             functions: HashMap::new(),
             stack: vec![Frame::new()],
+            reader,
+            writer,
         }
     }
 
     fn get_current(&self) -> Result<&Node, String> {
-        match &self.stack.last() {
+        match self.stack.last() {
             Some(frame) => Ok(&frame.current),
             _ => Err("Current not found".to_string()),
         }
     }
 
-    fn set_current(&mut self, new_current: Node) {
-        self.stack.last_mut().unwrap().current = new_current;
+    fn set_current(&mut self, new_current: Node) -> Result<(), String> {
+        match self.stack.last_mut() {
+            Some(frame) => {
+                frame.current = new_current;
+                Ok(())
+            }
+            _ => Err("No last frame".to_string()),
+        }
     }
 }
 
-pub fn evaluate(ast: Vec<Node>) -> Result<(), String> {
+pub fn evaluate<R, W>(ast: Vec<Node>, reader: R, writer: W) -> Result<(), String>
+where
+    R: Read,
+    W: Write,
+{
     let mut main = Node::Noop;
-    let state = &mut State::new();
+    let state = &mut State::new(reader, writer);
 
     for node in ast {
         match &node {
@@ -74,7 +95,11 @@ pub fn evaluate(ast: Vec<Node>) -> Result<(), String> {
     evaluate_node(&main, state)
 }
 
-fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
+fn evaluate_node<R, W>(ast: &Node, state: &mut State<R, W>) -> Result<(), String>
+where
+    R: Read,
+    W: Write,
+{
     match ast {
         Node::AssignVariable(variable_name, first_value, operations) => {
             // TODO: Check if value is actually a value?
@@ -100,7 +125,7 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
         // Taken care of by the assign variable
         Node::Binary(_, _) => unreachable!(),
         Node::Boolean(_) => {
-            state.set_current(ast.clone());
+            state.set_current(ast.clone())?;
             Ok(())
         }
         Node::CallFunction(name, arguments) => {
@@ -148,7 +173,7 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
             let possible_return = state.get_current()?.clone();
             state.stack.pop();
             if !function.void {
-                state.set_current(possible_return);
+                state.set_current(possible_return)?;
             }
 
             Ok(())
@@ -196,7 +221,7 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
             }
         }
         Node::Float(_) => {
-            state.set_current(ast.clone());
+            state.set_current(ast.clone())?;
             Ok(())
         }
         Node::For(max, flag, statments) => {
@@ -310,8 +335,7 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
         Node::Print(node) => {
             evaluate_node(node, state)?;
             let value = state.get_current()?.clone();
-            println!("{}", value);
-            Ok(())
+            writeln!(state.writer, "{}", value).map_err(|x| x.to_string())
         }
         Node::Return(node) => {
             evaluate_node(node, state)?;
@@ -327,7 +351,7 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
         Node::ReadFloat(_) => todo!(),
         Node::ReadString(_) => todo!(),
         Node::String(_) => {
-            state.set_current(ast.clone());
+            state.set_current(ast.clone())?;
             Ok(())
         }
         // Taken care of by the assign variable
@@ -342,7 +366,7 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
                 .get(name)
                 .unwrap()
                 .clone();
-            state.set_current(value);
+            state.set_current(value)?;
             Ok(())
         }
         Node::While(flag, statments) => {
@@ -386,7 +410,15 @@ fn evaluate_node(ast: &Node, state: &mut State) -> Result<(), String> {
     }
 }
 
-fn evaluate_binary(op: &BinaryOperation, value: &Node, state: &mut State) -> Result<(), String> {
+fn evaluate_binary<R, W>(
+    op: &BinaryOperation,
+    value: &Node,
+    state: &mut State<R, W>,
+) -> Result<(), String>
+where
+    R: Read,
+    W: Write,
+{
     match op {
         BinaryOperation::Add => math_operations(|x, y| x + y, value, state),
         BinaryOperation::Subtract => math_operations(|x, y| x - y, value, state),
@@ -420,21 +452,27 @@ fn evaluate_binary(op: &BinaryOperation, value: &Node, state: &mut State) -> Res
     }
 }
 
-fn math_operations<F>(math_operation: F, value: &Node, state: &mut State) -> Result<(), String>
+fn math_operations<R, W, F>(
+    math_operation: F,
+    value: &Node,
+    state: &mut State<R, W>,
+) -> Result<(), String>
 where
+    R: Read,
+    W: Write,
     F: Fn(f32, f32) -> f32,
 {
     match (&state.get_current()?, value) {
         (Node::Float(float_x), Node::Float(float_y)) => {
             let new_current = Node::Float(math_operation(*float_x, *float_y));
-            state.set_current(new_current);
+            state.set_current(new_current)?;
             Ok(())
         }
         (Node::Float(float_x), Node::Variable(var_name)) => {
             let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
             if let Node::Float(float_y) = var_value {
                 let new_current = Node::Float(math_operation(*float_x, *float_y));
-                state.set_current(new_current);
+                state.set_current(new_current)?;
                 Ok(())
             } else {
                 Err("Variable is not float".to_string())
@@ -444,25 +482,27 @@ where
     }
 }
 
-fn equality_float_operations<F>(
+fn equality_float_operations<R, W, F>(
     equality_operation: F,
     value: &Node,
-    state: &mut State,
+    state: &mut State<R, W>,
 ) -> Result<(), String>
 where
+    R: Read,
+    W: Write,
     F: Fn(f32, f32) -> bool,
 {
     match (&state.get_current()?, value) {
         (Node::Float(float_x), Node::Float(float_y)) => {
             let new_current = Node::Boolean(equality_operation(*float_x, *float_y));
-            state.set_current(new_current);
+            state.set_current(new_current)?;
             Ok(())
         }
         (Node::Float(float_x), Node::Variable(var_name)) => {
             let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
             if let Node::Float(float_y) = var_value {
                 let new_current = Node::Boolean(equality_operation(*float_x, *float_y));
-                state.set_current(new_current);
+                state.set_current(new_current)?;
                 Ok(())
             } else {
                 Err("Variable is not float".to_string())
@@ -472,25 +512,27 @@ where
     }
 }
 
-fn equality_bool_operations<F>(
+fn equality_bool_operations<R, W, F>(
     bool_operation: F,
     value: &Node,
-    state: &mut State,
+    state: &mut State<R, W>,
 ) -> Result<(), String>
 where
+    R: Read,
+    W: Write,
     F: Fn(bool, bool) -> bool,
 {
     match (&state.get_current()?, value) {
         (Node::Boolean(bool_x), Node::Boolean(bool_y)) => {
             let new_current = Node::Boolean(bool_operation(*bool_x, *bool_y));
-            state.set_current(new_current);
+            state.set_current(new_current)?;
             Ok(())
         }
         (Node::Boolean(bool_x), Node::Variable(var_name)) => {
             let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
             if let Node::Boolean(bool_y) = var_value {
                 let new_current = Node::Boolean(bool_operation(*bool_x, *bool_y));
-                state.set_current(new_current);
+                state.set_current(new_current)?;
                 Ok(())
             } else {
                 Err("Variable is not boolean".to_string())
@@ -500,13 +542,17 @@ where
     }
 }
 
-fn evaluate_unary(op: &UnaryOperation, state: &mut State) -> Result<(), String> {
+fn evaluate_unary<R, W>(op: &UnaryOperation, state: &mut State<R, W>) -> Result<(), String>
+where
+    R: Read,
+    W: Write,
+{
     match op {
         UnaryOperation::Not => {
             match state.get_current()? {
                 Node::Boolean(bool) => {
                     let new_current = Node::Boolean(!bool);
-                    state.set_current(new_current);
+                    state.set_current(new_current)?;
                 }
                 _ => unreachable!(),
             }
@@ -515,28 +561,340 @@ fn evaluate_unary(op: &UnaryOperation, state: &mut State) -> Result<(), String> 
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn hello_there() {
-//         let ast = vec![Node::Main(vec!(Node::Print(Box::new(Node::String(
-//             "Hello there".to_string())))))];
+    #[test]
+    fn hello_there() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![Node::Print(Box::new(Node::String(
+            "Hello there".to_string(),
+        )))])];
 
-//         assert_eq!(
-//             evaluate(ast)
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
 
-//         );
-//     }
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "Hello there\n");
+    }
 
-//     #[test]
-//     fn hello_test() {
-//         let mut stdout = Vec::new();
+    #[test]
+    fn variable() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("jawa".to_string(), Box::new(Node::Float(-13.2))),
+            Node::Print(Box::new(Node::Variable("jawa".to_string()))),
+        ])];
 
-//         // pass fake stdout when calling when testing
-//         hello(&mut stdout);
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
 
-//         assert_eq!(stdout, b"Hello world\n");
-//     }
-// }
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "-13.2\n");
+
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareString(
+                "ewok".to_string(),
+                Box::new(Node::String("Nub Nub".to_string())),
+            ),
+            Node::Print(Box::new(Node::Variable("ewok".to_string()))),
+        ])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "Nub Nub\n");
+
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareBoolean("darkSide".to_string(), Box::new(Node::Boolean(true))),
+            Node::Print(Box::new(Node::Variable("darkSide".to_string()))),
+        ])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "true\n");
+    }
+
+    #[test]
+    fn math() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("porg".to_string(), Box::new(Node::Float(4.0))),
+            Node::AssignVariable(
+                "porg".to_string(),
+                Box::new(Node::Variable("porg".to_string())),
+                vec![
+                    Node::Binary(BinaryOperation::Add, Box::new(Node::Float(2.0))),
+                    Node::Binary(BinaryOperation::Subtract, Box::new(Node::Float(1.0))),
+                    Node::Binary(BinaryOperation::Multiply, Box::new(Node::Float(3.0))),
+                    Node::Binary(BinaryOperation::Divide, Box::new(Node::Float(5.0))),
+                    Node::Binary(BinaryOperation::Exponent, Box::new(Node::Float(2.0))),
+                    Node::Binary(BinaryOperation::Modulus, Box::new(Node::Float(10.0))),
+                ],
+            ),
+            Node::Print(Box::new(Node::Variable("porg".to_string()))),
+        ])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "9\n");
+    }
+
+    #[test]
+    fn equality() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("anakin".to_string(), Box::new(Node::Float(27700.0))),
+            Node::DeclareFloat("luke".to_string(), Box::new(Node::Float(14500.0))),
+            Node::DeclareFloat("leia".to_string(), Box::new(Node::Float(14500.0))),
+            Node::DeclareBoolean("midichlorian".to_string(), Box::new(Node::Boolean(false))),
+            Node::AssignVariable(
+                "midichlorian".to_string(),
+                Box::new(Node::Variable("luke".to_string())),
+                vec![Node::Binary(
+                    BinaryOperation::GreaterThan,
+                    Box::new(Node::Variable("anakin".to_string())),
+                )],
+            ),
+            Node::Print(Box::new(Node::Variable("midichlorian".to_string()))),
+            Node::AssignVariable(
+                "midichlorian".to_string(),
+                Box::new(Node::Variable("anakin".to_string())),
+                vec![Node::Binary(
+                    BinaryOperation::LessThan,
+                    Box::new(Node::Variable("leia".to_string())),
+                )],
+            ),
+            Node::Print(Box::new(Node::Variable("midichlorian".to_string()))),
+            Node::AssignVariable(
+                "midichlorian".to_string(),
+                Box::new(Node::Variable("leia".to_string())),
+                vec![Node::Binary(
+                    BinaryOperation::Equal,
+                    Box::new(Node::Variable("luke".to_string())),
+                )],
+            ),
+            Node::Print(Box::new(Node::Variable("midichlorian".to_string()))),
+        ])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "false\nfalse\ntrue\n");
+    }
+
+    #[test]
+    fn logic() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareBoolean("lightside".to_string(), Box::new(Node::Boolean(true))),
+            Node::DeclareBoolean("darkside".to_string(), Box::new(Node::Boolean(false))),
+            Node::DeclareBoolean("revan".to_string(), Box::new(Node::Boolean(false))),
+            Node::AssignVariable(
+                "revan".to_string(),
+                Box::new(Node::Variable("lightside".to_string())),
+                vec![Node::Binary(
+                    BinaryOperation::Or,
+                    Box::new(Node::Variable("darkside".to_string())),
+                )],
+            ),
+            Node::Print(Box::new(Node::Variable("revan".to_string()))),
+            Node::AssignVariable(
+                "revan".to_string(),
+                Box::new(Node::Variable("revan".to_string())),
+                vec![Node::Binary(
+                    BinaryOperation::And,
+                    Box::new(Node::Variable("lightside".to_string())),
+                )],
+            ),
+            Node::Print(Box::new(Node::Variable("revan".to_string()))),
+            Node::AssignVariable(
+                "revan".to_string(),
+                Box::new(Node::Variable("revan".to_string())),
+                vec![Node::Unary(UnaryOperation::Not)],
+            ),
+            Node::Print(Box::new(Node::Variable("revan".to_string()))),
+        ])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "true\ntrue\nfalse\n");
+    }
+
+    #[test]
+    fn while_loop() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("deathStars".to_string(), Box::new(Node::Float(3.0))),
+            Node::While(
+                Box::new(Node::Variable("deathStars".to_string())),
+                vec![
+                    Node::Print(Box::new(Node::Variable("deathStars".to_string()))),
+                    Node::AssignVariable(
+                        "deathStars".to_string(),
+                        Box::new(Node::Variable("deathStars".to_string())),
+                        vec![Node::Binary(
+                            BinaryOperation::Subtract,
+                            Box::new(Node::Float(1.0)),
+                        )],
+                    ),
+                ],
+            ),
+        ])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "3\n2\n1\n");
+    }
+
+    #[test]
+    fn for_loop() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("deadYounglings".to_string(), Box::new(Node::Float(0.0))),
+            Node::For(
+                Box::new(Node::Float(10.0)),
+                Box::new(Node::Variable("deadYounglings".to_string())),
+                vec![Node::Print(Box::new(Node::Variable(
+                    "deadYounglings".to_string(),
+                )))],
+            ),
+        ])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n");
+    }
+
+    #[test]
+    fn if_else() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![Node::If(
+            Box::new(Node::Boolean(true)),
+            vec![Node::Print(Box::new(Node::String("Do".to_string())))],
+            vec![Node::Print(Box::new(Node::String("Don't".to_string())))],
+        )])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "Do\n");
+    }
+
+    #[test]
+    fn functions() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![
+            Node::DeclareFunction(
+                "NameTheSystem".to_string(),
+                vec![Node::Variable("planet".to_string())],
+                vec![
+                    Node::Print(Box::new(Node::String("Goodbye".to_string()))),
+                    Node::Print(Box::new(Node::Variable("planet".to_string()))),
+                    Node::Print(Box::new(Node::String("Deathstar noise".to_string()))),
+                ],
+                true,
+            ),
+            Node::Main(vec![Node::CallFunction(
+                "NameTheSystem".to_string(),
+                vec![Node::String("Alderaan".to_string())],
+            )]),
+        ];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "Goodbye\nAlderaan\nDeathstar noise\n");
+
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![
+            Node::DeclareFunction(
+                "TheOdds".to_string(),
+                vec![Node::Variable("odds".to_string())],
+                vec![
+                    Node::DeclareBoolean("survive".to_string(), Box::new(Node::Boolean(false))),
+                    Node::AssignVariable(
+                        "survive".to_string(),
+                        Box::new(Node::Variable("odds".to_string())),
+                        vec![
+                            Node::Binary(BinaryOperation::Modulus, Box::new(Node::Float(3720.0))),
+                            Node::Binary(BinaryOperation::Equal, Box::new(Node::Float(0.0))),
+                        ],
+                    ),
+                    Node::Return(Box::new(Node::Variable("survive".to_string()))),
+                ],
+                false,
+            ),
+            Node::Main(vec![
+                Node::DeclareBoolean("survive".to_string(), Box::new(Node::Boolean(false))),
+                Node::AssignVariable(
+                    "survive".to_string(),
+                    Box::new(Node::CallFunction(
+                        "TheOdds".to_string(),
+                        vec![Node::Float(52.0)],
+                    )),
+                    vec![],
+                ),
+                Node::Print(Box::new(Node::Variable("survive".to_string()))),
+            ]),
+        ];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "false\n");
+    }
+
+    #[test]
+    fn other() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(Vec::new())];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "");
+
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "");
+    }
+}

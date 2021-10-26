@@ -1,3 +1,5 @@
+use std::io;
+
 mod ast;
 mod compiler;
 mod interpreter;
@@ -10,5 +12,5 @@ fn main() -> Result<(), String> {
     May The Force be with you.
     "#;
     let ast = parser::parse(source);
-    interpreter::evaluate(ast.unwrap())
+    interpreter::evaluate(ast.unwrap(), io::stdin(), io::stdout())
 }
