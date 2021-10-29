@@ -1,4 +1,4 @@
-use std::io;
+use std::io::{self, Read};
 
 mod ast;
 mod compiler;
@@ -6,11 +6,13 @@ mod interpreter;
 mod parser;
 
 fn main() -> Result<(), String> {
-    let source = r#"
-    Do it!
-        The Sacred Texts! "Hello there"
-    May The Force be with you.
-    "#;
-    let ast = parser::parse(source);
+    let mut buffer = String::new();
+    let mut stdin = io::stdin();
+
+    if stdin.read_to_string(&mut buffer).is_err() {
+        return Err("Could not parse input".to_string());
+    };
+
+    let ast = parser::parse(buffer.as_str());
     interpreter::evaluate(ast.unwrap(), io::stdin(), io::stdout())
 }
