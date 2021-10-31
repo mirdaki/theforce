@@ -225,9 +225,12 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             Node::Float(float)
         }
         Rule::String => {
-            let string = pair.as_str();
-            // Remove parenthesis from string
-            Node::String(string[1..string.len() - 1].to_string())
+            let pairs = pair.into_inner();
+            let mut string = "".to_string();
+            for pair in pairs.into_iter() {
+                string.push_str(build_string(pair).as_str());
+            };
+            Node::String(string)
         }
         Rule::VariableName => {
             let name = pair.as_str();
@@ -253,6 +256,34 @@ fn build_function(pair: pest::iterators::Pair<Rule>, void: bool) -> Node {
     }
 
     Node::DeclareFunction(identfier.to_string(), paramaters, body, void)
+}
+
+fn build_string(pair: pest::iterators::Pair<Rule>) -> String {
+    match pair.as_rule() {
+        Rule::Inner => {
+            let pairs = pair.into_inner();
+            let mut string = "".to_string();
+            for pair in pairs.into_iter() {
+                string.push_str(build_string(pair).as_str());
+            };
+            string
+        }
+        Rule::Characters => {
+            pair.as_str().to_string()
+        }
+        Rule::Escape => {
+            match pair.as_str() {
+                "\\\"" => "\"".to_string(),
+                "\\\\" => "\\".to_string(),
+                "\\/" => "/".to_string(),
+                "\\n" => "\n".to_string(),
+                "\\r" => "\r".to_string(),
+                "\\t" => "\t".to_string(),
+                _ => unreachable!()
+            }
+        }
+        _ => unreachable!("String could not be parsed")
+    }
 }
 
 #[cfg(test)]
