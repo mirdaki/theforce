@@ -1,9 +1,11 @@
 use std::io::{self, Read};
 
 mod ast;
-mod compiler;
 mod interpreter;
 mod parser;
+
+#[cfg(feature = "llvm")]
+mod compiler;
 
 fn main() -> Result<(), String> {
     let mut buffer = String::new();
