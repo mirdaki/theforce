@@ -229,7 +229,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let mut string = "".to_string();
             for pair in pairs.into_iter() {
                 string.push_str(build_string(pair).as_str());
-            };
+            }
             Node::String(string)
         }
         Rule::VariableName => {
@@ -265,24 +265,20 @@ fn build_string(pair: pest::iterators::Pair<Rule>) -> String {
             let mut string = "".to_string();
             for pair in pairs.into_iter() {
                 string.push_str(build_string(pair).as_str());
-            };
+            }
             string
         }
-        Rule::Characters => {
-            pair.as_str().to_string()
-        }
-        Rule::Escape => {
-            match pair.as_str() {
-                "\\\"" => "\"".to_string(),
-                "\\\\" => "\\".to_string(),
-                "\\/" => "/".to_string(),
-                "\\n" => "\n".to_string(),
-                "\\r" => "\r".to_string(),
-                "\\t" => "\t".to_string(),
-                _ => unreachable!()
-            }
-        }
-        _ => unreachable!("String could not be parsed")
+        Rule::Characters => pair.as_str().to_string(),
+        Rule::Escape => match pair.as_str() {
+            "\\\"" => "\"".to_string(),
+            "\\\\" => "\\".to_string(),
+            "\\/" => "/".to_string(),
+            "\\n" => "\n".to_string(),
+            "\\r" => "\r".to_string(),
+            "\\t" => "\t".to_string(),
+            _ => unreachable!(),
+        },
+        _ => unreachable!("String could not be parsed"),
     }
 }
 
