@@ -38,6 +38,7 @@ Please do these things before you make your Pull Request
 - [ ] Make sure all unit tests pass with `cargo test`
 - [ ] Use our [.editorconfig](.editorconfig) to help automatically style all files
 - [ ] Format the code with `cargo fmt`
+- [ ] Link the relevant issue the Pull Request addresses
 
 [Issues]: https://github.com/mirdaki/theforce/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
 [Bug Issues]: https://github.com/mirdaki/theforce/labels/bug
