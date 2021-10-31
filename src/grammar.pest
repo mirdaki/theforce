@@ -152,16 +152,19 @@ FunctionName = { Identifier }
 
 Identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC)* }
 
-Float = @{ "-"? ~ ASCII_DIGIT+  ~ ("." ~ ASCII_DIGIT+)? }
+Float = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
 
 Boolean = { True | False }
 
 True = { "From a certain point of view." }
 False = { "No, that's not true. That's impossible!" }
 
-String  = @{ "\"" ~ Inner ~ "\"" }
-Inner   = @{ (!("\"" | "\\") ~ ANY)* ~ (Escape ~ Inner)? }
-Escape  = @{ "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t" ) }
+String = ${ "\"" ~ Inner ~ "\"" }
+Inner = { Characters ~ (Escape ~ Inner)? }
+
+Characters = @{ Character* }
+Character = @{ !("\"" | "\\") ~ ANY }
+Escape = @{ "\\" ~ ("\"" | "\\" | "/" | "n" | "r" | "t") }
 
 WHITESPACE = _{ " " | "\t" | NEWLINE }
 

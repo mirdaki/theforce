@@ -335,7 +335,7 @@ where
         Node::Print(node) => {
             evaluate_node(node, state)?;
             let value = state.get_current()?.clone();
-            writeln!(state.writer, "{}", value).map_err(|x| x.to_string())
+            write!(state.writer, "{}", value).map_err(|x| x.to_string())
         }
         Node::Return(node) => {
             evaluate_node(node, state)?;
@@ -669,7 +669,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "Hello there\n");
+        assert_eq!(output, "Hello there");
     }
 
     #[test]
@@ -685,7 +685,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "-13.2\n");
+        assert_eq!(output, "-13.2");
 
         let input = io::stdin();
         let mut output = Vec::new();
@@ -701,7 +701,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "Nub Nub\n");
+        assert_eq!(output, "Nub Nub");
 
         let input = io::stdin();
         let mut output = Vec::new();
@@ -714,7 +714,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "true\n");
+        assert_eq!(output, "true");
     }
 
     #[test]
@@ -742,7 +742,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "9\n");
+        assert_eq!(output, "9");
     }
 
     #[test]
@@ -787,7 +787,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "false\nfalse\ntrue\n");
+        assert_eq!(output, "falsefalsetrue");
     }
 
     #[test]
@@ -828,7 +828,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "true\ntrue\nfalse\n");
+        assert_eq!(output, "truetruefalse");
     }
 
     #[test]
@@ -857,7 +857,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "3\n2\n1\n");
+        assert_eq!(output, "321");
     }
 
     #[test]
@@ -879,7 +879,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n");
+        assert_eq!(output, "0123456789");
     }
 
     #[test]
@@ -896,7 +896,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "Do\n");
+        assert_eq!(output, "Do");
     }
 
     #[test]
@@ -924,7 +924,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "Goodbye\nAlderaan\nDeathstar noise\n");
+        assert_eq!(output, "GoodbyeAlderaanDeathstar noise");
 
         let input = io::stdin();
         let mut output = Vec::new();
@@ -964,7 +964,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "false\n");
+        assert_eq!(output, "false");
     }
 
     #[test]
@@ -981,7 +981,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "3.14\n");
+        assert_eq!(output, "3.14");
 
         let input = "Wicket";
         let mut output = Vec::new();
@@ -995,7 +995,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "Wicket\n");
+        assert_eq!(output, "Wicket");
 
         let input = "false";
         let mut output = Vec::new();
@@ -1009,7 +1009,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "false\n");
+        assert_eq!(output, "false");
     }
 
     #[test]
