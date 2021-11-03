@@ -76,15 +76,20 @@ where
         }
     }
 
-    // fn set_variable(&mut self, variable_name: String, variable_value: &Node) -> Result<(), String> {
-    //     match self.stack.last_mut() {
-    //         Some(frame) => {
-    //             frame.current = new_current;
-    //             Ok(())
-    //         }
-    //         _ => Err("No last frame".to_string()),
-    //     }
-    // }
+    fn set_variable(&mut self, variable_name: &str, variable_value: &Node) -> Result<(), String> {
+        let variable_result = match self.stack.last_mut() {
+            Some(frame) => Some(
+                frame
+                    .variables
+                    .insert(variable_name.to_string(), variable_value.clone()),
+            ),
+            None => None,
+        };
+        match variable_result {
+            Some(_) => Ok(()),
+            None => Err("No last frame".to_string()),
+        }
+    }
 }
 
 pub fn evaluate<R, W>(ast: Vec<Node>, reader: R, writer: W) -> Result<(), String>
@@ -134,13 +139,7 @@ where
                 };
             }
             let new_current = state.get_current()?.clone();
-            state
-                .stack
-                .last_mut()
-                .unwrap()
-                .variables
-                .insert(variable_name.to_string(), new_current);
-            Ok(())
+            state.set_variable(variable_name, &new_current)
         }
         // Taken care of by the assign variable
         Node::Binary(_, _) => unreachable!(),
@@ -199,28 +198,16 @@ where
             Ok(())
         }
         Node::DeclareBoolean(name, boolean) => {
+            // TODO: Decide if replacing an existing var is an error
             if let Node::Boolean(value) = **boolean {
-                state
-                    .stack
-                    .last_mut()
-                    .unwrap()
-                    .variables
-                    .insert(name.to_string(), Node::Boolean(value));
-                // TODO: Decide if replacing an existing var is an error
-                Ok(())
+                state.set_variable(name, &Node::Boolean(value))
             } else {
                 Err("Not boolean".to_string())
             }
         }
         Node::DeclareFloat(name, float) => {
             if let Node::Float(value) = **float {
-                state
-                    .stack
-                    .last_mut()
-                    .unwrap()
-                    .variables
-                    .insert(name.to_string(), Node::Float(value));
-                Ok(())
+                state.set_variable(name, &Node::Float(value))
             } else {
                 Err("Not float".to_string())
             }
@@ -229,13 +216,7 @@ where
         Node::DeclareFunction(_, _, _, _) => unreachable!(),
         Node::DeclareString(name, string) => {
             if let Node::String(value) = &**string {
-                state
-                    .stack
-                    .last_mut()
-                    .unwrap()
-                    .variables
-                    .insert(name.to_string(), Node::String(value.to_string()));
-                Ok(())
+                state.set_variable(name, &Node::String(value.clone()))
             } else {
                 Err("Not string".to_string())
             }
@@ -258,27 +239,17 @@ where
                 return Err("For flag not vairable".to_string());
             };
 
-            // Get the variable value
-            evaluate_node(
-                &state
-                    .stack
-                    .last()
-                    .unwrap()
-                    .variables
-                    .get(flag_var_name)
-                    .unwrap()
-                    .clone(),
-                state,
-            )?;
-
-            let mut flag_value = if let Node::Float(value) = state.get_current()?.clone() {
-                value
-            } else {
-                return Err("Flag not a float".to_string());
+            // For evaluation check
+            let evaluate_loop_flag = |flag: &Node, max: f32| -> Result<bool, String> {
+                match flag {
+                    Node::Float(float) => Ok(!float.eq(&max)),
+                    _ => Err("Flag not a float".to_string()),
+                }
             };
 
             // Check if should loop
-            let mut continue_loop = !flag_value.eq(&max_value);
+            evaluate_node(&state.get_variable(flag_var_name)?.clone(), state)?;
+            let mut continue_loop = evaluate_loop_flag(state.get_current()?, max_value)?;
 
             // Loop
             while continue_loop {
@@ -287,38 +258,20 @@ where
                 }
 
                 // Get the variable value
-                evaluate_node(
-                    &state
-                        .stack
-                        .last()
-                        .unwrap()
-                        .variables
-                        .get(flag_var_name)
-                        .unwrap()
-                        .clone(),
-                    state,
-                )?;
+                evaluate_node(&state.get_variable(flag_var_name)?.clone(), state)?;
 
-                flag_value = if let Node::Float(value) = state.get_current()?.clone() {
-                    value
+                let flag_value = if let Node::Float(value) = state.get_current()?.clone() {
+                    // Increment variable value
+                    Node::Float(value + 1.0)
                 } else {
                     return Err("Flag not a float".to_string());
                 };
 
-                // Increment variable value
-                flag_value += 1.0;
-
                 // Set the variable value
-                state
-                    .stack
-                    .last_mut()
-                    .unwrap()
-                    .variables
-                    .insert(flag_var_name.clone(), Node::Float(flag_value))
-                    .unwrap();
+                state.set_variable(flag_var_name, &flag_value)?;
 
                 // Check if should loop
-                continue_loop = !flag_value.eq(&max_value);
+                continue_loop = evaluate_loop_flag(&flag_value, max_value)?;
             }
             Ok(())
         }
@@ -392,13 +345,7 @@ where
                 return Err("Unable to convert bool".to_string());
             };
 
-            state
-                .stack
-                .last_mut()
-                .unwrap()
-                .variables
-                .insert(variable_name, Node::Boolean(input));
-            Ok(())
+            state.set_variable(variable_name.as_str(), &Node::Boolean(input))
         }
         Node::ReadFloat(variable) => {
             // Validate input is variable
@@ -425,13 +372,7 @@ where
                 return Err("Unable to convert float".to_string());
             };
 
-            state
-                .stack
-                .last_mut()
-                .unwrap()
-                .variables
-                .insert(variable_name, Node::Float(input));
-            Ok(())
+            state.set_variable(variable_name.as_str(), &Node::Float(input))
         }
         Node::ReadString(variable) => {
             // Validate input is variable
@@ -452,13 +393,7 @@ where
                 return Err("Unable to convert string".to_string());
             };
 
-            state
-                .stack
-                .last_mut()
-                .unwrap()
-                .variables
-                .insert(variable_name, Node::String(input));
-            Ok(())
+            state.set_variable(variable_name.as_str(), &Node::String(input))
         }
         Node::String(_) => {
             state.set_current(ast.clone())?;
@@ -466,19 +401,7 @@ where
         }
         // Taken care of by the assign variable
         Node::Unary(_) => unreachable!(),
-        Node::Variable(name) => {
-            // Error if not found
-            let value = state
-                .stack
-                .last_mut()
-                .unwrap()
-                .variables
-                .get(name)
-                .unwrap()
-                .clone();
-            state.set_current(value)?;
-            Ok(())
-        }
+        Node::Variable(name) => state.set_current(state.get_variable(name)?.clone()),
         Node::While(flag, statments) => {
             // Validate params
             let flag_var_name = if let Node::Variable(ref var_name) = **flag {
@@ -534,14 +457,7 @@ where
         BinaryOperation::Equal => {
             let mut equal_value = value.clone();
             if let Node::Variable(var_name) = &value {
-                equal_value = state
-                    .stack
-                    .last()
-                    .unwrap()
-                    .variables
-                    .get(var_name)
-                    .unwrap()
-                    .clone();
+                equal_value = state.get_variable(var_name)?.clone()
             };
             match equal_value {
                 Node::Boolean(_) => equality_bool_operations(|x, y| x == y, value, state),
@@ -574,7 +490,7 @@ where
             Ok(())
         }
         (Node::Float(float_x), Node::Variable(var_name)) => {
-            let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
+            let var_value = state.get_variable(var_name)?;
             if let Node::Float(float_y) = var_value {
                 let new_current = Node::Float(math_operation(*float_x, *float_y));
                 state.set_current(new_current)?;
@@ -604,7 +520,7 @@ where
             Ok(())
         }
         (Node::Float(float_x), Node::Variable(var_name)) => {
-            let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
+            let var_value = state.get_variable(var_name)?;
             if let Node::Float(float_y) = var_value {
                 let new_current = Node::Boolean(equality_operation(*float_x, *float_y));
                 state.set_current(new_current)?;
@@ -634,7 +550,7 @@ where
             Ok(())
         }
         (Node::Boolean(bool_x), Node::Variable(var_name)) => {
-            let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
+            let var_value = state.get_variable(var_name)?;
             if let Node::Boolean(bool_y) = var_value {
                 let new_current = Node::Boolean(bool_operation(*bool_x, *bool_y));
                 state.set_current(new_current)?;
