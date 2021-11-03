@@ -8,7 +8,6 @@ use crate::ast::{BinaryOperation, Node, UnaryOperation};
 struct Frame {
     variables: HashMap<String, Node>,
     current: Node,
-    loop_flag: Vec<Node>,
 }
 
 impl Frame {
@@ -16,7 +15,6 @@ impl Frame {
         Frame {
             variables: HashMap::new(),
             current: Node::Noop,
-            loop_flag: vec![Node::Noop],
         }
     }
 }
@@ -65,6 +63,28 @@ where
             _ => Err("No last frame".to_string()),
         }
     }
+
+    fn get_variable(&self, variable_name: &str) -> Result<&Node, String> {
+        let variable_node = match self.stack.last() {
+            Some(frame) => frame.variables.get(variable_name),
+            None => None,
+        };
+
+        match variable_node {
+            Some(variable) => Ok(variable),
+            None => Err("No varaible found".to_string()),
+        }
+    }
+
+    // fn set_variable(&mut self, variable_name: String, variable_value: &Node) -> Result<(), String> {
+    //     match self.stack.last_mut() {
+    //         Some(frame) => {
+    //             frame.current = new_current;
+    //             Ok(())
+    //         }
+    //         _ => Err("No last frame".to_string()),
+    //     }
+    // }
 }
 
 pub fn evaluate<R, W>(ast: Vec<Node>, reader: R, writer: W) -> Result<(), String>
@@ -225,7 +245,7 @@ where
             Ok(())
         }
         Node::For(max, flag, statments) => {
-            // Will be initiliaed, because of the match guard
+            // Validate params
             let max_value = if let Node::Float(max) = **max {
                 max
             } else {
@@ -460,40 +480,35 @@ where
             Ok(())
         }
         Node::While(flag, statments) => {
-            state
-                .stack
-                .last_mut()
-                .unwrap()
-                .loop_flag
-                .push(*flag.clone());
-            // TODO: Propagate error
-            evaluate_node(flag, state)?;
-            let mut continue_loop = match state.get_current()? {
-                Node::Boolean(bool) => *bool,
-                Node::Float(float) => *float != 0.0,
-                _ => unreachable!(),
+            // Validate params
+            let flag_var_name = if let Node::Variable(ref var_name) = **flag {
+                var_name
+            } else {
+                return Err("While flag not vairable".to_string());
             };
 
+            // While evaluation check
+            let evaluate_loop_flag = |flag: &Node| -> Result<bool, String> {
+                match flag {
+                    Node::Boolean(boolean) => Ok(*boolean),
+                    Node::Float(float) => Ok(*float != 0.0),
+                    _ => Err("Flag not a boolean or float".to_string()),
+                }
+            };
+
+            // Get the variable value and validate it
+            evaluate_node(&state.get_variable(flag_var_name)?.clone(), state)?;
+            let mut continue_loop = evaluate_loop_flag(state.get_current()?)?;
+
+            // Start looping
             while continue_loop {
                 for statment in statments {
                     evaluate_node(statment, state)?;
                 }
-                let flag = state
-                    .stack
-                    .last()
-                    .unwrap()
-                    .loop_flag
-                    .last()
-                    .unwrap()
-                    .clone();
-                evaluate_node(&flag, state)?;
-                continue_loop = match *state.get_current()? {
-                    Node::Boolean(bool) => bool,
-                    Node::Float(float) => float != 0.0,
-                    _ => unreachable!(),
-                };
+
+                evaluate_node(&state.get_variable(flag_var_name)?.clone(), state)?;
+                continue_loop = evaluate_loop_flag(state.get_current()?)?;
             }
-            state.stack.last_mut().unwrap().loop_flag.pop();
             Ok(())
         }
         Node::Noop => Ok(()),
