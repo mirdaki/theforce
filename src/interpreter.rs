@@ -143,10 +143,7 @@ where
         }
         // Taken care of by the assign variable
         Node::Binary(_, _) => unreachable!(),
-        Node::Boolean(_) => {
-            state.set_current(ast.clone())?;
-            Ok(())
-        }
+        Node::Boolean(_) => state.set_current(ast.clone()),
         Node::CallFunction(name, arguments) => {
             // Validate the function exists
             let function = if let Some(function) = state.functions.get(name) {
@@ -197,34 +194,22 @@ where
 
             Ok(())
         }
-        Node::DeclareBoolean(name, boolean) => {
-            // TODO: Decide if replacing an existing var is an error
-            if let Node::Boolean(value) = **boolean {
-                state.set_variable(name, &Node::Boolean(value))
-            } else {
-                Err("Not boolean".to_string())
-            }
-        }
-        Node::DeclareFloat(name, float) => {
-            if let Node::Float(value) = **float {
-                state.set_variable(name, &Node::Float(value))
-            } else {
-                Err("Not float".to_string())
-            }
-        }
+        // TODO: Decide if replacing an existing var is an error
+        Node::DeclareBoolean(name, boolean) => match **boolean {
+            Node::Boolean(value) => state.set_variable(name, &Node::Boolean(value)),
+            _ => Err("Not boolean".to_string()),
+        },
+        Node::DeclareFloat(name, float) => match **float {
+            Node::Float(value) => state.set_variable(name, &Node::Float(value)),
+            _ => Err("Not float".to_string()),
+        },
         // Done in the evaluate function
         Node::DeclareFunction(_, _, _, _) => unreachable!(),
-        Node::DeclareString(name, string) => {
-            if let Node::String(value) = &**string {
-                state.set_variable(name, &Node::String(value.clone()))
-            } else {
-                Err("Not string".to_string())
-            }
-        }
-        Node::Float(_) => {
-            state.set_current(ast.clone())?;
-            Ok(())
-        }
+        Node::DeclareString(name, string) => match &**string {
+            Node::String(value) => state.set_variable(name, &Node::String(value.clone())),
+            _ => Err("Not string".to_string()),
+        },
+        Node::Float(_) => state.set_current(ast.clone()),
         Node::For(max, flag, statments) => {
             // Validate params
             let max_value = if let Node::Float(max) = **max {
@@ -306,18 +291,25 @@ where
             Ok(())
         }
         Node::Print(node) => {
+            // Validate it's a value
+            match **node {
+                Node::Float(_) | Node::Boolean(_) | Node::String(_) | Node::Variable(_) => (),
+                _ => return Err("Return not a value".to_string()),
+            };
+
+            // Get the value and print
             evaluate_node(node, state)?;
             let value = state.get_current()?.clone();
             write!(state.writer, "{}", value).map_err(|x| x.to_string())
         }
         Node::Return(node) => {
+            // Put onto stack
             evaluate_node(node, state)?;
 
             // Validate it's a value
-            if let Node::Float(_) | Node::Boolean(_) | Node::String(_) = state.get_current()? {
-                Ok(())
-            } else {
-                Err("Argument not a value".to_string())
+            match state.get_current()? {
+                Node::Float(_) | Node::Boolean(_) | Node::String(_) => Ok(()),
+                _ => Err("Return not a value".to_string()),
             }
         }
         Node::ReadBoolean(variable) => {
@@ -395,10 +387,7 @@ where
 
             state.set_variable(variable_name.as_str(), &Node::String(input))
         }
-        Node::String(_) => {
-            state.set_current(ast.clone())?;
-            Ok(())
-        }
+        Node::String(_) => state.set_current(ast.clone()),
         // Taken care of by the assign variable
         Node::Unary(_) => unreachable!(),
         Node::Variable(name) => state.set_current(state.get_variable(name)?.clone()),
