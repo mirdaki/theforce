@@ -22,8 +22,8 @@ NonVoidFunction = {
 
 Parameters = { (FunctionParameters ~ VariableName)* }
 
-Main = { 
-    BeginMain 
+Main = {
+    BeginMain
     ~ Statements
     ~ EndMain }
 
@@ -81,14 +81,14 @@ ReadFloatStatement = { ReadFloat ~ VariableName }
 ReadStringStatement = { ReadString ~ VariableName }
 ReadBooleanStatement = { ReadBoolean ~ VariableName }
 
-ForStatement = { 
+ForStatement = {
     For ~ Value
     ~ ForStart ~ VariableName
     ~ Statements
     ~ EndFor
 }
 
-WhileStatement = { 
+WhileStatement = {
     While ~ Value
     ~ Statements
     ~ EndWhile
@@ -101,7 +101,7 @@ IfStatement = {
     ~ EndIf
 }
 
-CallFunctionStatement = { 
+CallFunctionStatement = {
     CallFunction ~ FunctionName
     ~ Arguments
 }
@@ -174,7 +174,7 @@ Print = _{ "The Sacred Texts!" }
 DeclareFunction = _{ "This is where the fun begins." }
 FunctionParameters = _{ "Now that’s a name I have not heard in a long time, a long time." }
 NotVoidFunction = _{ "It's a trap!" }
-Return = _{ "You’re all clear kid, let's blow this thing and go home." }
+Return = _{ "You're all clear kid, let's blow this thing and go home." }
 EndFunctionDeclaration = _{ "It is clear to me the Republic no longer functions." }
 AssignVariable = _{ "What a piece of junk!" }
 AssignVariableFromFunctionCall = _{ "Many Bothans died to bring us this information." }
@@ -201,12 +201,12 @@ Noop = _{ "Move along. Move along." }
 While = _{ "Here we go again." }
 EndWhile = _{ "Let the past die." }
 If = _{ "Do or do not." }
-Else = _{ "These aren’t the droids you’re looking for." }
+Else = _{ "These aren’t the droids you're looking for." }
 EndIf = _{ "You have failed me for the last time." }
-PassArgument = _{ "I’ll try spinning, thats a good trick." }
+PassArgument = _{ "I'll try spinning, that's a good trick." }
 For = _{ "For a thousand generations the Jedi were guardians of the republic." }
 ForStart = _{ "Let the Wookiee win." }
 EndFor = _{ "You cannot escape your destiny." }
 ReadFloat = _{ "Looking, found someone I would say you have." }
 ReadString = _{ "Now this is pod racing." }
-ReadBoolean = _{ "I hope you know what you’re doing." }
+ReadBoolean = _{ "I hope you know what you're doing." }
