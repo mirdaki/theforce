@@ -22,8 +22,8 @@ NonVoidFunction = {
 
 Parameters = { (FunctionParameters ~ VariableName)* }
 
-Main = { 
-    BeginMain 
+Main = {
+    BeginMain
     ~ Statements
     ~ EndMain }
 
@@ -81,14 +81,14 @@ ReadFloatStatement = { ReadFloat ~ VariableName }
 ReadStringStatement = { ReadString ~ VariableName }
 ReadBooleanStatement = { ReadBoolean ~ VariableName }
 
-ForStatement = { 
+ForStatement = {
     For ~ Value
     ~ ForStart ~ VariableName
     ~ Statements
     ~ EndFor
 }
 
-WhileStatement = { 
+WhileStatement = {
     While ~ Value
     ~ Statements
     ~ EndWhile
@@ -101,7 +101,7 @@ IfStatement = {
     ~ EndIf
 }
 
-CallFunctionStatement = { 
+CallFunctionStatement = {
     CallFunction ~ FunctionName
     ~ Arguments
 }

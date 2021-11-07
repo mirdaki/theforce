@@ -72,7 +72,7 @@ where
 
         match variable_node {
             Some(variable) => Ok(variable),
-            None => Err("No varaible found".to_string()),
+            None => Err("No variable found".to_string()),
         }
     }
 
@@ -126,12 +126,21 @@ where
     W: Write,
 {
     match ast {
-        Node::AssignVariable(variable_name, first_value, operations) => {
-            // TODO: Check if value is actually a value?
+        Node::AssignVariable(variable_name, initial_value, operations) => {
+            // Validate the initial value produces a value
+            match **initial_value {
+                Node::Float(_)
+                | Node::Boolean(_)
+                | Node::String(_)
+                | Node::Variable(_)
+                | Node::CallFunction(_, _) => (),
+                _ => return Err("Initial does not produces a value".to_string()),
+            };
+
             // Place value at top of stack
-            evaluate_node(first_value, state)?;
+            evaluate_node(initial_value, state)?;
             for operation in operations {
-                // TOOD: Actual error message
+                // TODO: Actual error message
                 let _ = match operation {
                     Node::Binary(operation, value) => evaluate_binary(operation, value, state),
                     Node::Unary(operation) => evaluate_unary(operation, state),
@@ -154,7 +163,7 @@ where
 
             // // Validate the inputs match
             if arguments.len() != function.parameters.len() {
-                return Err("Paramaters do not match arguments".to_string());
+                return Err("Parameters do not match arguments".to_string());
             }
 
             // Create a new frame in the stack
@@ -181,8 +190,8 @@ where
             state.stack.push(new_frame);
 
             // Evaluate the body
-            for statment in &function.body {
-                evaluate_node(statment, state)?;
+            for statement in &function.body {
+                evaluate_node(statement, state)?;
             }
 
             // Pop the stack frame. If non-void, set the return value to the new current
@@ -194,7 +203,6 @@ where
 
             Ok(())
         }
-        // TODO: Decide if replacing an existing var is an error
         Node::DeclareBoolean(name, boolean) => match **boolean {
             Node::Boolean(value) => state.set_variable(name, &Node::Boolean(value)),
             _ => Err("Not boolean".to_string()),
@@ -210,7 +218,7 @@ where
             _ => Err("Not string".to_string()),
         },
         Node::Float(_) => state.set_current(ast.clone()),
-        Node::For(max, flag, statments) => {
+        Node::For(max, flag, statements) => {
             // Validate params
             let max_value = if let Node::Float(max) = **max {
                 max
@@ -221,7 +229,7 @@ where
             let flag_var_name = if let Node::Variable(ref var_name) = **flag {
                 var_name
             } else {
-                return Err("For flag not vairable".to_string());
+                return Err("For flag not variable".to_string());
             };
 
             // For evaluation check
@@ -238,8 +246,8 @@ where
 
             // Loop
             while continue_loop {
-                for statment in statments {
-                    evaluate_node(statment, state)?;
+                for statement in statements {
+                    evaluate_node(statement, state)?;
                 }
 
                 // Get the variable value
@@ -260,7 +268,7 @@ where
             }
             Ok(())
         }
-        Node::If(flag, true_statments, false_statments) => {
+        Node::If(flag, true_statements, false_statements) => {
             // Processes flag
             evaluate_node(flag, state)?;
 
@@ -272,21 +280,21 @@ where
             };
 
             // Choose a branch. False branch may not exist, but should be empty from parser
-            let statments = if *if_flag {
-                true_statments
+            let statements = if *if_flag {
+                true_statements
             } else {
-                false_statments
+                false_statements
             };
 
-            for statment in statments {
-                evaluate_node(statment, state)?;
+            for statement in statements {
+                evaluate_node(statement, state)?;
             }
 
             Ok(())
         }
-        Node::Main(statments) => {
-            for statment in statments {
-                evaluate_node(statment, state)?;
+        Node::Main(statements) => {
+            for statement in statements {
+                evaluate_node(statement, state)?;
             }
             Ok(())
         }
@@ -319,12 +327,12 @@ where
         // Taken care of by the assign variable
         Node::Unary(_) => unreachable!(),
         Node::Variable(name) => state.set_current(state.get_variable(name)?.clone()),
-        Node::While(flag, statments) => {
+        Node::While(flag, statements) => {
             // Validate params
             let flag_var_name = if let Node::Variable(ref var_name) = **flag {
                 var_name
             } else {
-                return Err("While flag not vairable".to_string());
+                return Err("While flag not variable".to_string());
             };
 
             // While evaluation check
@@ -342,8 +350,8 @@ where
 
             // Start looping
             while continue_loop {
-                for statment in statments {
-                    evaluate_node(statment, state)?;
+                for statement in statements {
+                    evaluate_node(statement, state)?;
                 }
 
                 evaluate_node(&state.get_variable(flag_var_name)?.clone(), state)?;
