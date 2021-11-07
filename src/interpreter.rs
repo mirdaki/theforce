@@ -312,81 +312,9 @@ where
                 _ => Err("Return not a value".to_string()),
             }
         }
-        Node::ReadBoolean(variable) => {
-            // Validate input is variable
-            let variable_name = if let Node::Variable(variable_name) = &**variable {
-                variable_name.clone()
-            } else {
-                return Err("Not a variable".to_string());
-            };
-
-            let mut input = Vec::<u8>::new();
-            if state.reader.read_to_end(&mut input).is_err() {
-                return Err("Unable to read string".to_string());
-            }
-
-            let input = if let Ok(input) = std::str::from_utf8(&input) {
-                input.to_string()
-            } else {
-                return Err("Unable to convert string".to_string());
-            };
-
-            let input = if let Ok(input) = input.parse::<bool>() {
-                input
-            } else {
-                return Err("Unable to convert bool".to_string());
-            };
-
-            state.set_variable(variable_name.as_str(), &Node::Boolean(input))
-        }
-        Node::ReadFloat(variable) => {
-            // Validate input is variable
-            let variable_name = if let Node::Variable(variable_name) = &**variable {
-                variable_name.clone()
-            } else {
-                return Err("Not a variable".to_string());
-            };
-
-            let mut input = Vec::<u8>::new();
-            if state.reader.read_to_end(&mut input).is_err() {
-                return Err("Unable to read string".to_string());
-            }
-
-            let input = if let Ok(input) = std::str::from_utf8(&input) {
-                input.to_string()
-            } else {
-                return Err("Unable to convert string".to_string());
-            };
-
-            let input = if let Ok(input) = input.parse::<f32>() {
-                input
-            } else {
-                return Err("Unable to convert float".to_string());
-            };
-
-            state.set_variable(variable_name.as_str(), &Node::Float(input))
-        }
-        Node::ReadString(variable) => {
-            // Validate input is variable
-            let variable_name = if let Node::Variable(variable_name) = &**variable {
-                variable_name.clone()
-            } else {
-                return Err("Not a variable".to_string());
-            };
-
-            let mut input = Vec::<u8>::new();
-            if state.reader.read_to_end(&mut input).is_err() {
-                return Err("Unable to read string".to_string());
-            }
-
-            let input = if let Ok(input) = std::str::from_utf8(&input) {
-                input.to_string()
-            } else {
-                return Err("Unable to convert string".to_string());
-            };
-
-            state.set_variable(variable_name.as_str(), &Node::String(input))
-        }
+        Node::ReadBoolean(variable) => read_value(&**variable, Node::Boolean, state),
+        Node::ReadFloat(variable) => read_value(&**variable, Node::Float, state),
+        Node::ReadString(variable) => read_value(&**variable, Node::String, state),
         Node::String(_) => state.set_current(ast.clone()),
         // Taken care of by the assign variable
         Node::Unary(_) => unreachable!(),
@@ -425,6 +353,40 @@ where
         }
         Node::Noop => Ok(()),
     }
+}
+
+fn read_value<V, F, R, W>(
+    variable: &Node,
+    function: F,
+    state: &mut State<R, W>,
+) -> Result<(), String>
+where
+    V: std::str::FromStr,
+    R: Read,
+    W: Write,
+    F: Fn(V) -> Node,
+{
+    // Validate input is assigned to variable
+    let variable_name = if let Node::Variable(variable_name) = variable {
+        variable_name.clone()
+    } else {
+        return Err("Not a variable".to_string());
+    };
+
+    // Get input from user
+    let mut input = String::new();
+    if state.reader.read_to_string(&mut input).is_err() {
+        return Err("Unable to read input".to_string());
+    }
+
+    // Clean the input and convert it
+    let input = if let Ok(input) = input.trim().parse::<V>() {
+        input
+    } else {
+        return Err("Unable to convert input".to_string());
+    };
+
+    state.set_variable(variable_name.as_str(), &function(input))
 }
 
 fn evaluate_binary<R, W>(
