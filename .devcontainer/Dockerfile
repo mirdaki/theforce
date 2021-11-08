@@ -11,4 +11,4 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 # Install LLVM
 RUN wget https://apt.llvm.org/llvm.sh
 RUN chmod +x llvm.sh \
-    && sudo ./llvm.sh 10
+    && sudo ./llvm.sh 14
