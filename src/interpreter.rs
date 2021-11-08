@@ -140,7 +140,6 @@ where
             // Place value at top of stack
             evaluate_node(initial_value, state)?;
             for operation in operations {
-                // TODO: Actual error message
                 let _ = match operation {
                     Node::Binary(operation, value) => evaluate_binary(operation, value, state),
                     Node::Unary(operation) => evaluate_unary(operation, state),
@@ -269,6 +268,12 @@ where
             Ok(())
         }
         Node::If(flag, true_statements, false_statements) => {
+            // Flag not a value
+            match **flag {
+                Node::Float(_) | Node::Boolean(_) | Node::String(_) | Node::Variable(_) => (),
+                _ => return Err("Flag not a value".to_string()),
+            };
+
             // Processes flag
             evaluate_node(flag, state)?;
 
@@ -421,7 +426,7 @@ where
             match equal_value {
                 Node::Boolean(_) => equality_bool_operations(|x, y| x == y, value, state),
                 Node::Float(_) => equality_float_operations(|x, y| x.eq(&y), value, state),
-                Node::String(_) => todo!(),
+                Node::String(_) => equality_string_operations(|x, y| x.eq(y), value, state),
                 _ => unreachable!(),
             }
         }
@@ -516,6 +521,36 @@ where
                 Ok(())
             } else {
                 Err("Variable is not boolean".to_string())
+            }
+        }
+        _ => unreachable!(),
+    }
+}
+
+fn equality_string_operations<R, W, F>(
+    bool_operation: F,
+    value: &Node,
+    state: &mut State<R, W>,
+) -> Result<(), String>
+where
+    R: Read,
+    W: Write,
+    F: Fn(&str, &str) -> bool,
+{
+    match (&state.get_current()?, value) {
+        (Node::String(string_x), Node::String(string_y)) => {
+            let new_current = Node::Boolean(bool_operation(&*string_x, &*string_y));
+            state.set_current(new_current)?;
+            Ok(())
+        }
+        (Node::String(string_x), Node::Variable(var_name)) => {
+            let var_value = state.get_variable(var_name)?;
+            if let Node::String(string_y) = var_value {
+                let new_current = Node::Boolean(bool_operation(&*string_x, &*string_y));
+                state.set_current(new_current)?;
+                Ok(())
+            } else {
+                Err("Variable is not string".to_string())
             }
         }
         _ => unreachable!(),
