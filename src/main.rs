@@ -1,6 +1,7 @@
-use std::io::{self, Read};
+use std::io;
 
 mod ast;
+mod cli;
 mod interpreter;
 mod parser;
 
@@ -8,13 +9,10 @@ mod parser;
 mod compiler;
 
 fn main() -> Result<(), String> {
-    let mut buffer = String::new();
-    let mut stdin = io::stdin();
+    let config = cli::parse_arguments()?;
 
-    if stdin.read_to_string(&mut buffer).is_err() {
-        return Err("Could not parse input".to_string());
-    };
+    let source = cli::read_source(config)?;
 
-    let ast = parser::parse(buffer.as_str());
+    let ast = parser::parse(source.as_str());
     interpreter::evaluate(ast.unwrap(), io::stdin(), io::stdout())
 }
