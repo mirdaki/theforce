@@ -60,7 +60,9 @@ jobs:
       - name: Run cargo example test
         uses: actions-rs/cargo@v1
         with:
-          command: run examples/*
+          command:
+            - run
+            - examples/*
 
   lints:
     name: Linters
