@@ -121,7 +121,7 @@ WIP
     - I'm not much more than an interpreter
     - You will find it is you that are mistaken about a great many things
     - I felt a great disturbance in the Force
-    - I'm standing here in pieces and you're having dillusions of grandeur
+    - I'm standing here in pieces and you're having dilutions of grandeur
     - Your feeble skills are no match for the power of the dark side
     - You want to go home and rethink your life
     - That's not how the Force works
@@ -184,7 +184,7 @@ BeginMain
         # Stuff
     EndWhile
 
-    For intValueExpre
+    For intValueExpression
     ForStartValue name
         # Stuff
     EndFor

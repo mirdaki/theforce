@@ -8,7 +8,6 @@ use crate::ast::{BinaryOperation, Node, UnaryOperation};
 struct Frame {
     variables: HashMap<String, Node>,
     current: Node,
-    loop_flag: Vec<Node>,
 }
 
 impl Frame {
@@ -16,7 +15,6 @@ impl Frame {
         Frame {
             variables: HashMap::new(),
             current: Node::Noop,
-            loop_flag: vec![Node::Noop],
         }
     }
 }
@@ -65,6 +63,33 @@ where
             _ => Err("No last frame".to_string()),
         }
     }
+
+    fn get_variable(&self, variable_name: &str) -> Result<&Node, String> {
+        let variable_node = match self.stack.last() {
+            Some(frame) => frame.variables.get(variable_name),
+            None => None,
+        };
+
+        match variable_node {
+            Some(variable) => Ok(variable),
+            None => Err("No variable found".to_string()),
+        }
+    }
+
+    fn set_variable(&mut self, variable_name: &str, variable_value: &Node) -> Result<(), String> {
+        let variable_result = match self.stack.last_mut() {
+            Some(frame) => Some(
+                frame
+                    .variables
+                    .insert(variable_name.to_string(), variable_value.clone()),
+            ),
+            None => None,
+        };
+        match variable_result {
+            Some(_) => Ok(()),
+            None => Err("No last frame".to_string()),
+        }
+    }
 }
 
 pub fn evaluate<R, W>(ast: Vec<Node>, reader: R, writer: W) -> Result<(), String>
@@ -101,12 +126,20 @@ where
     W: Write,
 {
     match ast {
-        Node::AssignVariable(variable_name, first_value, operations) => {
-            // TODO: Check if value is actually a value?
+        Node::AssignVariable(variable_name, initial_value, operations) => {
+            // Validate the initial value produces a value
+            match **initial_value {
+                Node::Float(_)
+                | Node::Boolean(_)
+                | Node::String(_)
+                | Node::Variable(_)
+                | Node::CallFunction(_, _) => (),
+                _ => return Err("Initial does not produces a value".to_string()),
+            };
+
             // Place value at top of stack
-            evaluate_node(first_value, state)?;
+            evaluate_node(initial_value, state)?;
             for operation in operations {
-                // TOOD: Actual error message
                 let _ = match operation {
                     Node::Binary(operation, value) => evaluate_binary(operation, value, state),
                     Node::Unary(operation) => evaluate_unary(operation, state),
@@ -114,20 +147,11 @@ where
                 };
             }
             let new_current = state.get_current()?.clone();
-            state
-                .stack
-                .last_mut()
-                .unwrap()
-                .variables
-                .insert(variable_name.to_string(), new_current);
-            Ok(())
+            state.set_variable(variable_name, &new_current)
         }
         // Taken care of by the assign variable
         Node::Binary(_, _) => unreachable!(),
-        Node::Boolean(_) => {
-            state.set_current(ast.clone())?;
-            Ok(())
-        }
+        Node::Boolean(_) => state.set_current(ast.clone()),
         Node::CallFunction(name, arguments) => {
             // Validate the function exists
             let function = if let Some(function) = state.functions.get(name) {
@@ -138,7 +162,7 @@ where
 
             // // Validate the inputs match
             if arguments.len() != function.parameters.len() {
-                return Err("Paramaters do not match arguments".to_string());
+                return Err("Parameters do not match arguments".to_string());
             }
 
             // Create a new frame in the stack
@@ -165,8 +189,8 @@ where
             state.stack.push(new_frame);
 
             // Evaluate the body
-            for statment in &function.body {
-                evaluate_node(statment, state)?;
+            for statement in &function.body {
+                evaluate_node(statement, state)?;
             }
 
             // Pop the stack frame. If non-void, set the return value to the new current
@@ -178,54 +202,23 @@ where
 
             Ok(())
         }
-        Node::DeclareBoolean(name, boolean) => {
-            if let Node::Boolean(value) = **boolean {
-                state
-                    .stack
-                    .last_mut()
-                    .unwrap()
-                    .variables
-                    .insert(name.to_string(), Node::Boolean(value));
-                // TODO: Decide if replacing an existing var is an error
-                Ok(())
-            } else {
-                Err("Not boolean".to_string())
-            }
-        }
-        Node::DeclareFloat(name, float) => {
-            if let Node::Float(value) = **float {
-                state
-                    .stack
-                    .last_mut()
-                    .unwrap()
-                    .variables
-                    .insert(name.to_string(), Node::Float(value));
-                Ok(())
-            } else {
-                Err("Not float".to_string())
-            }
-        }
+        Node::DeclareBoolean(name, boolean) => match **boolean {
+            Node::Boolean(value) => state.set_variable(name, &Node::Boolean(value)),
+            _ => Err("Not boolean".to_string()),
+        },
+        Node::DeclareFloat(name, float) => match **float {
+            Node::Float(value) => state.set_variable(name, &Node::Float(value)),
+            _ => Err("Not float".to_string()),
+        },
         // Done in the evaluate function
         Node::DeclareFunction(_, _, _, _) => unreachable!(),
-        Node::DeclareString(name, string) => {
-            if let Node::String(value) = &**string {
-                state
-                    .stack
-                    .last_mut()
-                    .unwrap()
-                    .variables
-                    .insert(name.to_string(), Node::String(value.to_string()));
-                Ok(())
-            } else {
-                Err("Not string".to_string())
-            }
-        }
-        Node::Float(_) => {
-            state.set_current(ast.clone())?;
-            Ok(())
-        }
-        Node::For(max, flag, statments) => {
-            // Will be initiliaed, because of the match guard
+        Node::DeclareString(name, string) => match &**string {
+            Node::String(value) => state.set_variable(name, &Node::String(value.clone())),
+            _ => Err("Not string".to_string()),
+        },
+        Node::Float(_) => state.set_current(ast.clone()),
+        Node::For(max, flag, statements) => {
+            // Validate params
             let max_value = if let Node::Float(max) = **max {
                 max
             } else {
@@ -235,74 +228,52 @@ where
             let flag_var_name = if let Node::Variable(ref var_name) = **flag {
                 var_name
             } else {
-                return Err("For flag not vairable".to_string());
+                return Err("For flag not variable".to_string());
             };
 
-            // Get the variable value
-            evaluate_node(
-                &state
-                    .stack
-                    .last()
-                    .unwrap()
-                    .variables
-                    .get(flag_var_name)
-                    .unwrap()
-                    .clone(),
-                state,
-            )?;
-
-            let mut flag_value = if let Node::Float(value) = state.get_current()?.clone() {
-                value
-            } else {
-                return Err("Flag not a float".to_string());
+            // For evaluation check
+            let evaluate_loop_flag = |flag: &Node, max: f32| -> Result<bool, String> {
+                match flag {
+                    Node::Float(float) => Ok(!float.eq(&max)),
+                    _ => Err("Flag not a float".to_string()),
+                }
             };
 
             // Check if should loop
-            let mut continue_loop = !flag_value.eq(&max_value);
+            evaluate_node(&state.get_variable(flag_var_name)?.clone(), state)?;
+            let mut continue_loop = evaluate_loop_flag(state.get_current()?, max_value)?;
 
             // Loop
             while continue_loop {
-                for statment in statments {
-                    evaluate_node(statment, state)?;
+                for statement in statements {
+                    evaluate_node(statement, state)?;
                 }
 
                 // Get the variable value
-                evaluate_node(
-                    &state
-                        .stack
-                        .last()
-                        .unwrap()
-                        .variables
-                        .get(flag_var_name)
-                        .unwrap()
-                        .clone(),
-                    state,
-                )?;
+                evaluate_node(&state.get_variable(flag_var_name)?.clone(), state)?;
 
-                flag_value = if let Node::Float(value) = state.get_current()?.clone() {
-                    value
+                let flag_value = if let Node::Float(value) = state.get_current()?.clone() {
+                    // Increment variable value
+                    Node::Float(value + 1.0)
                 } else {
                     return Err("Flag not a float".to_string());
                 };
 
-                // Increment variable value
-                flag_value += 1.0;
-
                 // Set the variable value
-                state
-                    .stack
-                    .last_mut()
-                    .unwrap()
-                    .variables
-                    .insert(flag_var_name.clone(), Node::Float(flag_value))
-                    .unwrap();
+                state.set_variable(flag_var_name, &flag_value)?;
 
                 // Check if should loop
-                continue_loop = !flag_value.eq(&max_value);
+                continue_loop = evaluate_loop_flag(&flag_value, max_value)?;
             }
             Ok(())
         }
-        Node::If(flag, true_statments, false_statments) => {
+        Node::If(flag, true_statements, false_statements) => {
+            // Flag not a value
+            match **flag {
+                Node::Float(_) | Node::Boolean(_) | Node::String(_) | Node::Variable(_) => (),
+                _ => return Err("Flag not a value".to_string()),
+            };
+
             // Processes flag
             evaluate_node(flag, state)?;
 
@@ -314,190 +285,121 @@ where
             };
 
             // Choose a branch. False branch may not exist, but should be empty from parser
-            let statments = if *if_flag {
-                true_statments
+            let statements = if *if_flag {
+                true_statements
             } else {
-                false_statments
+                false_statements
             };
 
-            for statment in statments {
-                evaluate_node(statment, state)?;
+            for statement in statements {
+                evaluate_node(statement, state)?;
             }
 
             Ok(())
         }
-        Node::Main(statments) => {
-            for statment in statments {
-                evaluate_node(statment, state)?;
+        Node::Main(statements) => {
+            for statement in statements {
+                evaluate_node(statement, state)?;
             }
             Ok(())
         }
         Node::Print(node) => {
+            // Validate it's a value
+            match **node {
+                Node::Float(_) | Node::Boolean(_) | Node::String(_) | Node::Variable(_) => (),
+                _ => return Err("Return not a value".to_string()),
+            };
+
+            // Get the value and print
             evaluate_node(node, state)?;
             let value = state.get_current()?.clone();
             write!(state.writer, "{}", value).map_err(|x| x.to_string())
         }
         Node::Return(node) => {
+            // Put onto stack
             evaluate_node(node, state)?;
 
             // Validate it's a value
-            if let Node::Float(_) | Node::Boolean(_) | Node::String(_) = state.get_current()? {
-                Ok(())
-            } else {
-                Err("Argument not a value".to_string())
+            match state.get_current()? {
+                Node::Float(_) | Node::Boolean(_) | Node::String(_) => Ok(()),
+                _ => Err("Return not a value".to_string()),
             }
         }
-        Node::ReadBoolean(variable) => {
-            // Validate input is variable
-            let variable_name = if let Node::Variable(variable_name) = &**variable {
-                variable_name.clone()
-            } else {
-                return Err("Not a variable".to_string());
-            };
-
-            let mut input = Vec::<u8>::new();
-            if state.reader.read_to_end(&mut input).is_err() {
-                return Err("Unable to read string".to_string());
-            }
-
-            let input = if let Ok(input) = std::str::from_utf8(&input) {
-                input.to_string()
-            } else {
-                return Err("Unable to convert string".to_string());
-            };
-
-            let input = if let Ok(input) = input.parse::<bool>() {
-                input
-            } else {
-                return Err("Unable to convert bool".to_string());
-            };
-
-            state
-                .stack
-                .last_mut()
-                .unwrap()
-                .variables
-                .insert(variable_name, Node::Boolean(input));
-            Ok(())
-        }
-        Node::ReadFloat(variable) => {
-            // Validate input is variable
-            let variable_name = if let Node::Variable(variable_name) = &**variable {
-                variable_name.clone()
-            } else {
-                return Err("Not a variable".to_string());
-            };
-
-            let mut input = Vec::<u8>::new();
-            if state.reader.read_to_end(&mut input).is_err() {
-                return Err("Unable to read string".to_string());
-            }
-
-            let input = if let Ok(input) = std::str::from_utf8(&input) {
-                input.to_string()
-            } else {
-                return Err("Unable to convert string".to_string());
-            };
-
-            let input = if let Ok(input) = input.parse::<f32>() {
-                input
-            } else {
-                return Err("Unable to convert float".to_string());
-            };
-
-            state
-                .stack
-                .last_mut()
-                .unwrap()
-                .variables
-                .insert(variable_name, Node::Float(input));
-            Ok(())
-        }
-        Node::ReadString(variable) => {
-            // Validate input is variable
-            let variable_name = if let Node::Variable(variable_name) = &**variable {
-                variable_name.clone()
-            } else {
-                return Err("Not a variable".to_string());
-            };
-
-            let mut input = Vec::<u8>::new();
-            if state.reader.read_to_end(&mut input).is_err() {
-                return Err("Unable to read string".to_string());
-            }
-
-            let input = if let Ok(input) = std::str::from_utf8(&input) {
-                input.to_string()
-            } else {
-                return Err("Unable to convert string".to_string());
-            };
-
-            state
-                .stack
-                .last_mut()
-                .unwrap()
-                .variables
-                .insert(variable_name, Node::String(input));
-            Ok(())
-        }
-        Node::String(_) => {
-            state.set_current(ast.clone())?;
-            Ok(())
-        }
+        Node::ReadBoolean(variable) => read_value(&**variable, Node::Boolean, state),
+        Node::ReadFloat(variable) => read_value(&**variable, Node::Float, state),
+        Node::ReadString(variable) => read_value(&**variable, Node::String, state),
+        Node::String(_) => state.set_current(ast.clone()),
         // Taken care of by the assign variable
         Node::Unary(_) => unreachable!(),
-        Node::Variable(name) => {
-            // Error if not found
-            let value = state
-                .stack
-                .last_mut()
-                .unwrap()
-                .variables
-                .get(name)
-                .unwrap()
-                .clone();
-            state.set_current(value)?;
-            Ok(())
-        }
-        Node::While(flag, statments) => {
-            state
-                .stack
-                .last_mut()
-                .unwrap()
-                .loop_flag
-                .push(*flag.clone());
-            // TODO: Propagate error
-            evaluate_node(flag, state)?;
-            let mut continue_loop = match state.get_current()? {
-                Node::Boolean(bool) => *bool,
-                Node::Float(float) => *float != 0.0,
-                _ => unreachable!(),
+        Node::Variable(name) => state.set_current(state.get_variable(name)?.clone()),
+        Node::While(flag, statements) => {
+            // Validate params
+            let flag_var_name = if let Node::Variable(ref var_name) = **flag {
+                var_name
+            } else {
+                return Err("While flag not variable".to_string());
             };
 
-            while continue_loop {
-                for statment in statments {
-                    evaluate_node(statment, state)?;
+            // While evaluation check
+            let evaluate_loop_flag = |flag: &Node| -> Result<bool, String> {
+                match flag {
+                    Node::Boolean(boolean) => Ok(*boolean),
+                    Node::Float(float) => Ok(*float != 0.0),
+                    _ => Err("Flag not a boolean or float".to_string()),
                 }
-                let flag = state
-                    .stack
-                    .last()
-                    .unwrap()
-                    .loop_flag
-                    .last()
-                    .unwrap()
-                    .clone();
-                evaluate_node(&flag, state)?;
-                continue_loop = match *state.get_current()? {
-                    Node::Boolean(bool) => bool,
-                    Node::Float(float) => float != 0.0,
-                    _ => unreachable!(),
-                };
+            };
+
+            // Get the variable value and validate it
+            evaluate_node(&state.get_variable(flag_var_name)?.clone(), state)?;
+            let mut continue_loop = evaluate_loop_flag(state.get_current()?)?;
+
+            // Start looping
+            while continue_loop {
+                for statement in statements {
+                    evaluate_node(statement, state)?;
+                }
+
+                evaluate_node(&state.get_variable(flag_var_name)?.clone(), state)?;
+                continue_loop = evaluate_loop_flag(state.get_current()?)?;
             }
-            state.stack.last_mut().unwrap().loop_flag.pop();
             Ok(())
         }
         Node::Noop => Ok(()),
     }
+}
+
+fn read_value<V, F, R, W>(
+    variable: &Node,
+    function: F,
+    state: &mut State<R, W>,
+) -> Result<(), String>
+where
+    V: std::str::FromStr,
+    R: Read,
+    W: Write,
+    F: Fn(V) -> Node,
+{
+    // Validate input is assigned to variable
+    let variable_name = if let Node::Variable(variable_name) = variable {
+        variable_name.clone()
+    } else {
+        return Err("Not a variable".to_string());
+    };
+
+    // Get input from user
+    let mut input = String::new();
+    if state.reader.read_to_string(&mut input).is_err() {
+        return Err("Unable to read input".to_string());
+    }
+
+    // Clean the input and convert it
+    let input = if let Ok(input) = input.trim().parse::<V>() {
+        input
+    } else {
+        return Err("Unable to convert input".to_string());
+    };
+
+    state.set_variable(variable_name.as_str(), &function(input))
 }
 
 fn evaluate_binary<R, W>(
@@ -519,19 +421,12 @@ where
         BinaryOperation::Equal => {
             let mut equal_value = value.clone();
             if let Node::Variable(var_name) = &value {
-                equal_value = state
-                    .stack
-                    .last()
-                    .unwrap()
-                    .variables
-                    .get(var_name)
-                    .unwrap()
-                    .clone();
+                equal_value = state.get_variable(var_name)?.clone()
             };
             match equal_value {
                 Node::Boolean(_) => equality_bool_operations(|x, y| x == y, value, state),
                 Node::Float(_) => equality_float_operations(|x, y| x.eq(&y), value, state),
-                Node::String(_) => todo!(),
+                Node::String(_) => equality_string_operations(|x, y| x.eq(y), value, state),
                 _ => unreachable!(),
             }
         }
@@ -559,7 +454,7 @@ where
             Ok(())
         }
         (Node::Float(float_x), Node::Variable(var_name)) => {
-            let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
+            let var_value = state.get_variable(var_name)?;
             if let Node::Float(float_y) = var_value {
                 let new_current = Node::Float(math_operation(*float_x, *float_y));
                 state.set_current(new_current)?;
@@ -589,7 +484,7 @@ where
             Ok(())
         }
         (Node::Float(float_x), Node::Variable(var_name)) => {
-            let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
+            let var_value = state.get_variable(var_name)?;
             if let Node::Float(float_y) = var_value {
                 let new_current = Node::Boolean(equality_operation(*float_x, *float_y));
                 state.set_current(new_current)?;
@@ -619,13 +514,43 @@ where
             Ok(())
         }
         (Node::Boolean(bool_x), Node::Variable(var_name)) => {
-            let var_value = state.stack.last().unwrap().variables.get(var_name).unwrap();
+            let var_value = state.get_variable(var_name)?;
             if let Node::Boolean(bool_y) = var_value {
                 let new_current = Node::Boolean(bool_operation(*bool_x, *bool_y));
                 state.set_current(new_current)?;
                 Ok(())
             } else {
                 Err("Variable is not boolean".to_string())
+            }
+        }
+        _ => unreachable!(),
+    }
+}
+
+fn equality_string_operations<R, W, F>(
+    bool_operation: F,
+    value: &Node,
+    state: &mut State<R, W>,
+) -> Result<(), String>
+where
+    R: Read,
+    W: Write,
+    F: Fn(&str, &str) -> bool,
+{
+    match (&state.get_current()?, value) {
+        (Node::String(string_x), Node::String(string_y)) => {
+            let new_current = Node::Boolean(bool_operation(&*string_x, &*string_y));
+            state.set_current(new_current)?;
+            Ok(())
+        }
+        (Node::String(string_x), Node::Variable(var_name)) => {
+            let var_value = state.get_variable(var_name)?;
+            if let Node::String(string_y) = var_value {
+                let new_current = Node::Boolean(bool_operation(&*string_x, &*string_y));
+                state.set_current(new_current)?;
+                Ok(())
+            } else {
+                Err("Variable is not string".to_string())
             }
         }
         _ => unreachable!(),

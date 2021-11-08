@@ -36,7 +36,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
         Rule::NonVoidFunction => build_function(pair, false),
         Rule::CallFunctionStatement => {
             let mut pairs = pair.into_inner();
-            let identfier = pairs.next().unwrap().as_str();
+            let identifier = pairs.next().unwrap().as_str();
             let mut arguments = Vec::<Node>::new();
             let maybe_args = pairs.next().unwrap();
             if Rule::Arguments == maybe_args.as_rule() {
@@ -44,17 +44,17 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
                     arguments.push(build_ast(pair));
                 }
             }
-            Node::CallFunction(identfier.to_string(), arguments)
+            Node::CallFunction(identifier.to_string(), arguments)
         }
         Rule::AssignStatement | Rule::AssignFromFunctionStatement => {
             let mut pairs = pair.into_inner();
-            let identfier = pairs.next().unwrap().as_str();
+            let identifier = pairs.next().unwrap().as_str();
             let value = build_ast(pairs.next().unwrap());
             let mut operations = Vec::<Node>::new();
             for pair in pairs.into_iter() {
                 operations.push(build_ast(pair));
             }
-            Node::AssignVariable(identfier.to_string(), Box::new(value), operations)
+            Node::AssignVariable(identifier.to_string(), Box::new(value), operations)
         }
         Rule::DeclareBooleanStatement => {
             let mut pair = pair.into_inner();
@@ -101,40 +101,40 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let mut pairs = pair.into_inner();
             let value = build_ast(pairs.next().unwrap());
             let identifier = pairs.next().unwrap().as_str();
-            let mut statments = Vec::<Node>::new();
+            let mut statements = Vec::<Node>::new();
             for pair in pairs.into_iter() {
-                statments.push(build_ast(pair));
+                statements.push(build_ast(pair));
             }
             Node::For(
                 Box::new(value),
                 Box::new(Node::Variable(identifier.to_string())),
-                statments,
+                statements,
             )
         }
         Rule::WhileStatement => {
             let mut pairs = pair.into_inner();
             let value = build_ast(pairs.next().unwrap());
-            let mut statments = Vec::<Node>::new();
+            let mut statements = Vec::<Node>::new();
             for pair in pairs.into_iter() {
-                statments.push(build_ast(pair));
+                statements.push(build_ast(pair));
             }
-            Node::While(Box::new(value), statments)
+            Node::While(Box::new(value), statements)
         }
         Rule::IfStatement => {
             let mut pairs = pair.into_inner();
             let value = build_ast(pairs.next().unwrap());
-            let mut if_statments = Vec::<Node>::new();
-            let mut else_statments = Vec::<Node>::new();
+            let mut if_statements = Vec::<Node>::new();
+            let mut else_statements = Vec::<Node>::new();
             for pair in pairs.into_iter() {
                 if pair.as_rule() == Rule::ElseClause {
                     for pair in pair.into_inner().into_iter() {
-                        else_statments.push(build_ast(pair));
+                        else_statements.push(build_ast(pair));
                     }
                     break;
                 }
-                if_statments.push(build_ast(pair));
+                if_statements.push(build_ast(pair));
             }
-            Node::If(Box::new(value), if_statments, else_statments)
+            Node::If(Box::new(value), if_statements, else_statements)
         }
         Rule::NotOperator => Node::Unary(UnaryOperation::Not),
         Rule::AddOperator => {
@@ -242,12 +242,12 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
 
 fn build_function(pair: pest::iterators::Pair<Rule>, void: bool) -> Node {
     let mut pairs = pair.into_inner();
-    let identfier = pairs.next().unwrap().as_str();
-    let mut paramaters = Vec::<Node>::new();
+    let identifier = pairs.next().unwrap().as_str();
+    let mut parameters = Vec::<Node>::new();
     let maybe_params = pairs.next().unwrap();
     if Rule::Parameters == maybe_params.as_rule() {
         for pair in maybe_params.into_inner() {
-            paramaters.push(build_ast(pair));
+            parameters.push(build_ast(pair));
         }
     }
     let mut body = Vec::<Node>::new();
@@ -255,7 +255,7 @@ fn build_function(pair: pest::iterators::Pair<Rule>, void: bool) -> Node {
         body.push(build_ast(pair));
     }
 
-    Node::DeclareFunction(identfier.to_string(), paramaters, body, void)
+    Node::DeclareFunction(identifier.to_string(), parameters, body, void)
 }
 
 fn build_string(pair: pest::iterators::Pair<Rule>) -> String {
