@@ -641,7 +641,7 @@ mod tests {
         Do it!
             Do or do not. From a certain point of view.
                 The Sacred Texts! "Do"
-            These aren’t the droids you’re looking for.
+            These aren't the droids you're looking for.
                 The Sacred Texts! "Don't"
             You have failed me for the last time.
         May The Force be with you.
@@ -663,7 +663,7 @@ mod tests {
     fn functions() {
         let source = r#"
         This is where the fun begins. NameTheSystem
-        Now that’s a name I have not heard in a long time, a long time. planet
+        Now that's a name I have not heard in a long time, a long time. planet
             The Sacred Texts! "Goodbye"
             The Sacred Texts! planet
             The Sacred Texts! "Deathstar noise"
@@ -671,7 +671,7 @@ mod tests {
 
         Do it!
             I have a bad feeling about this. NameTheSystem
-            I’ll try spinning, thats a good trick. "Alderaan"
+            I'll try spinning, that's a good trick. "Alderaan"
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -699,7 +699,7 @@ mod tests {
 
         let source = r#"
         This is where the fun begins. TheOdds
-        Now that’s a name I have not heard in a long time, a long time. odds
+        Now that's a name I have not heard in a long time, a long time. odds
         It's a trap!
             I am the senate! survive
             Whoosa are youssa? No, that's not true. That's impossible!
@@ -710,7 +710,7 @@ mod tests {
                 You're a Jedi too, nice to meet you. 0
             The garbage will do.
 
-            You’re all clear kid, let's blow this thing and go home. survive
+            You're all clear kid, let's blow this thing and go home. survive
         It is clear to me the Republic no longer functions.
 
         Do it!
@@ -719,7 +719,7 @@ mod tests {
 
             Many Bothans died to bring us this information. survive
                 I have a bad feeling about this. TheOdds
-                I’ll try spinning, thats a good trick. 52
+                I'll try spinning, that's a good trick. 52
             The garbage will do.
 
             The Sacred Texts! survive
@@ -818,7 +818,7 @@ mod tests {
             I am the senate! darkSide
             Whoosa are youssa? From a certain point of view.
 
-            I hope you know what you’re doing. darkSide
+            I hope you know what you're doing. darkSide
 
             The Sacred Texts! darkSide
         May The Force be with you.

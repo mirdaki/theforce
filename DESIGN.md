@@ -9,17 +9,17 @@ WIP
     - Oh, not good
     - Bad motivator
     - **No, that's not true. That's impossible**
-    - We don’t serve there kind here
-    - That’s no moon
+    - We don't serve their kind here
+    - That's no moon
 - True
     - What I told you was true **from a certain point of view**
-    - Help me Obi-Wan Kenobi, you’re my only hope
-    - Search you feelings lord Vader, you know it to be true
+    - Help me Obi-Wan Kenobi, you're my only hope
+    - Search your feelings lord Vader, you know it to be true
 - If
     - Try not. Do or do not. There is no try.
     - **Do or do not**
 - Else
-    - These aren’t the droids you’re looking for
+    - These aren't the droids you're looking for
 - EndIf
     - **You have failed me for the last time**
     - Now his failure is complete
@@ -68,10 +68,10 @@ WIP
 - NotVoidFunction
     - It's a trap
 - FunctionParameters
-    - Now that’s a name I have not heard in a long time, a long time
+    - Now that's a name I have not heard in a long time, a long time
 - Return
     - There is nothing for me here now
-    - **You’re all clear kid, let's blow this thing and go home**
+    - **You're all clear kid, let's blow this thing and go home**
 - EndFunctionDeclaration
     - **It is clear to me the Republic no longer functions**
     - You want to go home and rethink your life
@@ -104,7 +104,7 @@ WIP
 - ReadString
     - Now this is pod racing
 - ReadBoolean
-    - I hope you know what you’re doing
+    - I hope you know what you're doing
 - AssignVariable
     - What a piece of junk
 - SetValue
@@ -113,15 +113,15 @@ WIP
 - EndAssignVariable
     - The garbage will do
 - PassArgument
-    - I’ll try spinning, thats a good trick.
+    - I'll try spinning, thats a good trick.
 - ParseError
     - Sometimes there are things no one can fix.
     - I trusted them to fix it. It's not my fault
     - Don't blame me, I'm an interpreter
-    - I’m not much more than an interpreter
+    - I'm not much more than an interpreter
     - You will find it is you that are mistaken about a great many things
     - I felt a great disturbance in the Force
-    - I’m standing here in pieces and you’re having dilutions of grandeur
+    - I'm standing here in pieces and you're having dilutions of grandeur
     - Your feeble skills are no match for the power of the dark side
     - You want to go home and rethink your life
     - That's not how the Force works
@@ -146,7 +146,7 @@ DeclareFunction name
     FunctionParameters firstParam
     FunctionParameters secondParam
     NonVoidFunction
-    
+
     # Stuff
     Return value
 EndFunctionDeclaration
@@ -173,7 +173,7 @@ BeginMain
     AssignVariableFromFunctionCall name
         CallFunction ReadString
     EndAssignVariable
-    
+
     If value
         # Stuff
     Else
@@ -188,6 +188,6 @@ BeginMain
     ForStartValue name
         # Stuff
     EndFor
-    
+
 EndMain
 ```
