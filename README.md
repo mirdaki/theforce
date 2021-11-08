@@ -8,12 +8,12 @@ Install Rust. We also provide a [Dev Container](https://code.visualstudio.com/do
 
 To run the examples:
 ```bash
-cargo run < examples/hello-there.force
+cargo run examples/hello-there.force
 ```
 
 To run with LLVM support (currently a WIP):
 ```bash
-cargo run --features llvm < examples/hello-there.force
+cargo run examples/hello-there.force --features llvm
 ```
 
 ## Built With

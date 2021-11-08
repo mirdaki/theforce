@@ -19,7 +19,9 @@
                     "kind": "bin"
                 }
             },
-            "args": [],
+            "args": [
+                "examples/hello-there.force"
+            ],
             "cwd": "${workspaceFolder}"
         },
         {
