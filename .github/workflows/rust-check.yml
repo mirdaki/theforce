@@ -61,7 +61,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: run
-          args: examples/*
+          args: examples/hello-there.force
 
   lints:
     name: Linters
