@@ -1,6 +1,6 @@
 # Based on https://github.com/actions-rs/example/blob/master/.github/workflows/quickstart.yml
 
-on: [push, pull_request]
+on: [pull_request]
 
 name: Rust Check
 
@@ -43,8 +43,8 @@ jobs:
         with:
           command: test
 
-  example-test:
-    name: Example Tests
+  example-hello-there:
+    name: Example Hello There
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -62,6 +62,26 @@ jobs:
         with:
           command: run
           args: examples/hello-there.force
+
+    example-fizzbuzz:
+    name: Example Fizzbuzz
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Run cargo example test
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: examples/fizzbuzz.force
 
   lints:
     name: Linters
