@@ -2,7 +2,7 @@
 
 on: [push, pull_request]
 
-name: Quickstart
+name: Rust Check
 
 jobs:
   check:
@@ -24,7 +24,7 @@ jobs:
         with:
           command: check
 
-  test:
+  unit-test:
     name: Unit Tests
     runs-on: ubuntu-latest
     steps:
@@ -42,6 +42,46 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+
+  example-hello-there:
+    name: Example Hello There
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Run cargo example test
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: examples/hello-there.force
+
+  example-fizzbuzz:
+    name: Example Fizzbuzz
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Run cargo example test
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: examples/fizzbuzz.force
 
   lints:
     name: Linters
