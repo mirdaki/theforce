@@ -63,7 +63,7 @@ jobs:
           command: run
           args: examples/hello-there.force
 
-    example-fizzbuzz:
+  example-fizzbuzz:
     name: Example Fizzbuzz
     runs-on: ubuntu-latest
     steps:
