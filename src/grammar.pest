@@ -167,6 +167,7 @@ Character = @{ !("\"" | "\\") ~ ANY }
 Escape = @{ "\\" ~ ("\"" | "\\" | "/" | "n" | "r" | "t") }
 
 WHITESPACE = _{ " " | "\t" | NEWLINE }
+COMMENT = _{ ("|-o-|" | ":><:" | "<(-.-)>") ~ (!NEWLINE ~ ANY)* }
 
 BeginMain = _{ "Do it!" }
 EndMain = _{ "May The Force be with you." }

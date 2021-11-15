@@ -863,6 +863,16 @@ mod tests {
         assert!(ast.is_ok());
 
         assert_eq!(ast.unwrap(), vec!());
+
+        let source = r#"
+        Do it!
+            |-o-| Goes nnnneeeeeaaaaarrrrr
+            :><: Goes pew pew pew
+            <(-.-)> Goes hmmm
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
     }
 
     #[test]
