@@ -31,7 +31,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute to the proj
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is dual-licensed under the MIT and Yoda License - see the [LICENSE.md](LICENSE.md) and [YODA-LICENSE.md](YODA-LICENSE.md) files for details.
 
 The Force is in no way affiliated with or endorsed by Lucasfilm Limited or any of its subsidiaries, employees, or associates. All Star Wars quotes and references in this project are copyrighted to Lucasfilm Limited. This project intends to use these strictly within the terms of fair use under United States copyright laws.
 
