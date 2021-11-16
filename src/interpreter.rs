@@ -76,7 +76,9 @@ where
         }
     }
 
-    fn set_variable(&mut self, variable_name: &str, variable_value: &Node) -> Result<(), String> {
+    /// Returns a Some of bool indicating if the variable is new (true) or an existing one (false).
+    /// Used to prevent varaibles from being re-declared.
+    fn set_variable(&mut self, variable_name: &str, variable_value: &Node) -> Result<bool, String> {
         let variable_result = match self.stack.last_mut() {
             Some(frame) => Some(
                 frame
@@ -86,7 +88,16 @@ where
             None => None,
         };
         match variable_result {
-            Some(_) => Ok(()),
+            Some(Some(last_value)) => {
+                // Verify the old value is the same type as the new one
+                if std::mem::discriminant(&last_value) == std::mem::discriminant(variable_value) {
+                    Ok(false)
+                } else {
+                    Err("Cannot change variable type".to_string())
+                }
+            }
+            // New value being set
+            Some(None) => Ok(true),
             None => Err("No last frame".to_string()),
         }
     }
@@ -147,7 +158,7 @@ where
                 };
             }
             let new_current = state.get_current()?.clone();
-            state.set_variable(variable_name, &new_current)
+            state.set_variable(variable_name, &new_current).map(|_| ())
         }
         // Taken care of by the assign variable
         Node::Binary(_, _) => unreachable!(),
@@ -203,17 +214,26 @@ where
             Ok(())
         }
         Node::DeclareBoolean(name, boolean) => match **boolean {
-            Node::Boolean(value) => state.set_variable(name, &Node::Boolean(value)),
+            Node::Boolean(value) => {
+                let result = state.set_variable(name, &Node::Boolean(value));
+                error_if_redeclare(result)
+            }
             _ => Err("Not boolean".to_string()),
         },
         Node::DeclareFloat(name, float) => match **float {
-            Node::Float(value) => state.set_variable(name, &Node::Float(value)),
+            Node::Float(value) => {
+                let result = state.set_variable(name, &Node::Float(value));
+                error_if_redeclare(result)
+            }
             _ => Err("Not float".to_string()),
         },
         // Done in the evaluate function
         Node::DeclareFunction(_, _, _, _) => unreachable!(),
         Node::DeclareString(name, string) => match &**string {
-            Node::String(value) => state.set_variable(name, &Node::String(value.clone())),
+            Node::String(value) => {
+                let result = state.set_variable(name, &Node::String(value.clone()));
+                error_if_redeclare(result)
+            }
             _ => Err("Not string".to_string()),
         },
         Node::Float(_) => state.set_current(ast.clone()),
@@ -399,7 +419,9 @@ where
         return Err("Unable to convert input".to_string());
     };
 
-    state.set_variable(variable_name.as_str(), &function(input))
+    state
+        .set_variable(variable_name.as_str(), &function(input))
+        .map(|_| ())
 }
 
 fn evaluate_binary<R, W>(
@@ -573,6 +595,14 @@ where
             }
             Ok(())
         }
+    }
+}
+
+fn error_if_redeclare(set_variable_result: Result<bool, String>) -> Result<(), String> {
+    match set_variable_result {
+        Ok(false) => Err("Cannot redeclare a variable".to_string()),
+        Ok(true) => Ok(()),
+        Err(error) => Err(error),
     }
 }
 
@@ -935,6 +965,36 @@ mod tests {
 
         let output = String::from_utf8(output).expect("Not UTF-8");
         assert_eq!(output, "false");
+    }
+
+    #[test]
+    fn type_change() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("jarjar".to_string(), Box::new(Node::Float(0.0))),
+            Node::AssignVariable(
+                "jarjar".to_string(),
+                Box::new(Node::Variable("jarjar".to_string())),
+                vec![Node::Binary(
+                    BinaryOperation::Equal,
+                    Box::new(Node::Float(1.0)),
+                )],
+            ),
+        ])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_err());
+
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("jarjar".to_string(), Box::new(Node::Float(0.0))),
+            Node::DeclareFloat("jarjar".to_string(), Box::new(Node::Float(1.0))),
+        ])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_err());
     }
 
     #[test]
