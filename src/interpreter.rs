@@ -86,7 +86,16 @@ where
             None => None,
         };
         match variable_result {
-            Some(_) => Ok(()),
+            Some(Some(last_value)) => {
+                // Verify the old value is the same type as the new one
+                if std::mem::discriminant(&last_value) == std::mem::discriminant(variable_value) {
+                    Ok(())
+                } else {
+                    Err("Cannot change variable type".to_string())
+                }
+            },
+            // New value being set
+            Some(None) => Ok(()),
             None => Err("No last frame".to_string()),
         }
     }
@@ -935,6 +944,23 @@ mod tests {
 
         let output = String::from_utf8(output).expect("Not UTF-8");
         assert_eq!(output, "false");
+    }
+
+    #[test]
+    fn type_change() {
+        let input = io::stdin();
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("jarjar".to_string(), Box::new(Node::Float(0.0))),
+            Node::AssignVariable(
+                "jarjar".to_string(),
+                Box::new(Node::Variable("jarjar".to_string())),
+                vec![Node::Binary(BinaryOperation::Equal, Box::new(Node::Float(1.0)))],
+            )
+        ])];
+
+        let result = evaluate(ast, input, &mut output);
+        assert!(result.is_err());
     }
 
     #[test]
