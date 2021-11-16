@@ -216,14 +216,14 @@ where
         Node::DeclareBoolean(name, boolean) => match **boolean {
             Node::Boolean(value) => {
                 let result = state.set_variable(name, &Node::Boolean(value));
-                error_if_reassignment(result)
+                error_if_redeclare(result)
             }
             _ => Err("Not boolean".to_string()),
         },
         Node::DeclareFloat(name, float) => match **float {
             Node::Float(value) => {
                 let result = state.set_variable(name, &Node::Float(value));
-                error_if_reassignment(result)
+                error_if_redeclare(result)
             }
             _ => Err("Not float".to_string()),
         },
@@ -232,7 +232,7 @@ where
         Node::DeclareString(name, string) => match &**string {
             Node::String(value) => {
                 let result = state.set_variable(name, &Node::String(value.clone()));
-                error_if_reassignment(result)
+                error_if_redeclare(result)
             }
             _ => Err("Not string".to_string()),
         },
@@ -598,9 +598,9 @@ where
     }
 }
 
-fn error_if_reassignment(set_variable_result: Result<bool, String>) -> Result<(), String> {
+fn error_if_redeclare(set_variable_result: Result<bool, String>) -> Result<(), String> {
     match set_variable_result {
-        Ok(false) => Err("Cannot reassign a variable".to_string()),
+        Ok(false) => Err("Cannot redeclare a variable".to_string()),
         Ok(true) => Ok(()),
         Err(error) => Err(error),
     }
