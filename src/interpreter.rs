@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    io::{Read, Write},
+    io::{BufRead, Write},
 };
 
 use crate::ast::{BinaryOperation, Node, UnaryOperation};
@@ -35,7 +35,7 @@ struct State<R, W> {
 
 impl<R, W> State<R, W>
 where
-    R: Read,
+    R: BufRead,
     W: Write,
 {
     fn new(reader: R, writer: W) -> State<R, W> {
@@ -105,7 +105,7 @@ where
 
 pub fn evaluate<R, W>(ast: Vec<Node>, reader: R, writer: W) -> Result<(), String>
 where
-    R: Read,
+    R: BufRead,
     W: Write,
 {
     let mut main = Node::Noop;
@@ -133,7 +133,7 @@ where
 
 fn evaluate_node<R, W>(ast: &Node, state: &mut State<R, W>) -> Result<(), String>
 where
-    R: Read,
+    R: BufRead,
     W: Write,
 {
     match ast {
@@ -395,7 +395,7 @@ fn read_value<V, F, R, W>(
 ) -> Result<(), String>
 where
     V: std::str::FromStr,
-    R: Read,
+    R: BufRead,
     W: Write,
     F: Fn(V) -> Node,
 {
@@ -408,7 +408,7 @@ where
 
     // Get input from user
     let mut input = String::new();
-    if state.reader.read_to_string(&mut input).is_err() {
+    if state.reader.read_line(&mut input).is_err() {
         return Err("Unable to read input".to_string());
     }
 
@@ -430,7 +430,7 @@ fn evaluate_binary<R, W>(
     state: &mut State<R, W>,
 ) -> Result<(), String>
 where
-    R: Read,
+    R: BufRead,
     W: Write,
 {
     match op {
@@ -465,7 +465,7 @@ fn math_operations<R, W, F>(
     state: &mut State<R, W>,
 ) -> Result<(), String>
 where
-    R: Read,
+    R: BufRead,
     W: Write,
     F: Fn(f32, f32) -> f32,
 {
@@ -495,7 +495,7 @@ fn equality_float_operations<R, W, F>(
     state: &mut State<R, W>,
 ) -> Result<(), String>
 where
-    R: Read,
+    R: BufRead,
     W: Write,
     F: Fn(f32, f32) -> bool,
 {
@@ -525,7 +525,7 @@ fn equality_bool_operations<R, W, F>(
     state: &mut State<R, W>,
 ) -> Result<(), String>
 where
-    R: Read,
+    R: BufRead,
     W: Write,
     F: Fn(bool, bool) -> bool,
 {
@@ -555,7 +555,7 @@ fn equality_string_operations<R, W, F>(
     state: &mut State<R, W>,
 ) -> Result<(), String>
 where
-    R: Read,
+    R: BufRead,
     W: Write,
     F: Fn(&str, &str) -> bool,
 {
@@ -581,7 +581,7 @@ where
 
 fn evaluate_unary<R, W>(op: &UnaryOperation, state: &mut State<R, W>) -> Result<(), String>
 where
-    R: Read,
+    R: BufRead,
     W: Write,
 {
     match op {
@@ -620,7 +620,7 @@ mod tests {
             "Hello there".to_string(),
         )))])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -636,7 +636,7 @@ mod tests {
             Node::Print(Box::new(Node::Variable("jawa".to_string()))),
         ])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -652,7 +652,7 @@ mod tests {
             Node::Print(Box::new(Node::Variable("ewok".to_string()))),
         ])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -665,7 +665,7 @@ mod tests {
             Node::Print(Box::new(Node::Variable("darkSide".to_string()))),
         ])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -693,7 +693,7 @@ mod tests {
             Node::Print(Box::new(Node::Variable("porg".to_string()))),
         ])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -738,7 +738,7 @@ mod tests {
             Node::Print(Box::new(Node::Variable("midichlorian".to_string()))),
         ])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -779,7 +779,7 @@ mod tests {
             Node::Print(Box::new(Node::Variable("revan".to_string()))),
         ])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -808,7 +808,7 @@ mod tests {
             ),
         ])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -830,7 +830,7 @@ mod tests {
             ),
         ])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -847,7 +847,7 @@ mod tests {
             vec![Node::Print(Box::new(Node::String("Don't".to_string())))],
         )])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -875,7 +875,7 @@ mod tests {
             )]),
         ];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -915,7 +915,7 @@ mod tests {
             ]),
         ];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -983,7 +983,7 @@ mod tests {
             ),
         ])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_err());
 
         let input = io::stdin();
@@ -993,7 +993,7 @@ mod tests {
             Node::DeclareFloat("jarjar".to_string(), Box::new(Node::Float(1.0))),
         ])];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_err());
     }
 
@@ -1003,7 +1003,7 @@ mod tests {
         let mut output = Vec::new();
         let ast = vec![Node::Main(Vec::new())];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
@@ -1013,7 +1013,7 @@ mod tests {
         let mut output = Vec::new();
         let ast = vec![];
 
-        let result = evaluate(ast, input, &mut output);
+        let result = evaluate(ast, input.lock(), &mut output);
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
