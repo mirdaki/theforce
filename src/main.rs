@@ -14,5 +14,5 @@ fn main() -> Result<(), String> {
     let source = cli::read_source(config)?;
 
     let ast = parser::parse(source.as_str());
-    interpreter::evaluate(ast.unwrap(), io::stdin(), io::stdout())
+    interpreter::evaluate(ast.unwrap(), io::stdin().lock(), io::stdout())
 }
