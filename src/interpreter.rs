@@ -1,4 +1,7 @@
-use std::{collections::HashMap, io::{BufRead, Read, Write}};
+use std::{
+    collections::HashMap,
+    io::{BufRead, Write},
+};
 
 use crate::ast::{BinaryOperation, Node, UnaryOperation};
 
