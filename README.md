@@ -2,9 +2,21 @@
 
 > The Force is a gateway to abilities many believe are unnatural...
 
+```force
+Do it!
+    The Sacred Jedi Texts! "Hello there\n"
+May The Force be with you.
+```
+
+The Force is a Star Wars inspired programming language. All keywords are made up of quotes from the movies and it is fully armed and operational!
+
 ## Getting Started
 
-Install Rust. We also provide a [Dev Container](https://code.visualstudio.com/docs/remote/create-dev-container) if you would prefer to run it that way.
+To learn about using The Force, please look at the [introduction](docs/introduction.md). We also have some [examples](examples) of full programs you can use as reference.
+
+### Developing
+
+[Install Rust](https://www.rust-lang.org/tools/install). We also provide a [Dev Container](https://code.visualstudio.com/docs/remote/create-dev-container) if you would prefer to run it that way.
 
 To run the examples:
 ```bash

@@ -4,7 +4,7 @@
 
 Hello there! This document will provide an introduction to using The Force. It is going to assume some basic programming knowledge.
 
-Some quick technical descriptions: The Force is a stack based language, with dynamic and strong typing. It's primary design goal was to optimize for number of quotes (which at times makes it cumbersome to write, but is certainly fun to read). Neither indention or newlines matter for the most part, but we encourage new statements/operations on each line and indenting new scope for readability.
+Some quick technical jargon: The Force is a stack based, interpreted language, with dynamic and strong typing. It's primary design goal was to optimize for number of quotes (which at times makes it cumbersome to write, but is certainly fun to read). Neither indention or newlines matter for the most part, but we encourage adding a new line between each statements and operations and indenting new scope for readability.
 
 The Force supports these programing language constructs:
 - Variables
@@ -49,16 +49,15 @@ Files written in The Force use the `.force` extension. In addition to the snippe
 
 ### Main
 
-The Force executes the main function in each file. There should be no more than one.
-
-This code prints "Hello there".
+This code prints "Hello there". There is also a comment from Yoda to help describe the code. Note: The Force executes the main function in each file. There should be no more than one.
 
 ```force
+// A comment, this is
 BeginMain
     Print "Hello there"
 EndMain
 
-
+<(-.-)> A comment, this is
 Do it!
     The Sacred Jedi Texts! "Hello there"
 May The Force be with you.
