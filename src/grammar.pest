@@ -7,6 +7,7 @@ Function = _{ VoidFunction | NonVoidFunction | Main }
 VoidFunction = {
     DeclareFunction ~ FunctionName
     ~ Parameters
+    ~ Void
     ~ Statements
     ~ EndFunctionDeclaration
 }
@@ -14,7 +15,6 @@ VoidFunction = {
 NonVoidFunction = {
     DeclareFunction ~ FunctionName
     ~ Parameters
-    ~ NotVoidFunction
     ~ Statements
     ~ ReturnStatement
     ~ EndFunctionDeclaration
@@ -157,7 +157,7 @@ Float = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
 Boolean = { True | False }
 
 True = { "From a certain point of view." }
-False = { "No, that's not true. That's impossible!" }
+False = { "That's impossible!" }
 
 String = ${ "\"" ~ Inner ~ "\"" }
 Inner = { Characters ~ (Escape ~ Inner)? }
@@ -171,43 +171,43 @@ COMMENT = _{ ("|-o-|" | ":><:" | "<(-.-)>") ~ (!NEWLINE ~ ANY)* }
 
 BeginMain = _{ "Do it!" }
 EndMain = _{ "May The Force be with you." }
-Print = _{ "The Sacred Texts!" }
+Print = _{ "The Sacred Jedi Texts!" }
 DeclareFunction = _{ "This is where the fun begins." }
-FunctionParameters = _{ "Now that's a name I have not heard in a long time, a long time." }
-NotVoidFunction = _{ "It's a trap!" }
-Return = _{ "You're all clear kid, let's blow this thing and go home." }
-EndFunctionDeclaration = _{ "It is clear to me the Republic no longer functions." }
+FunctionParameters = _{ "Now, that's a name I've not heard in a long time. A long time." }
+Void = _{ "It's a trap!" }
+Return = _{ "You're all clear, kid. Now let's blow this thing and go home." }
+EndFunctionDeclaration = _{ "You cannot escape your destiny." }
 AssignVariable = _{ "What a piece of junk!" }
 AssignVariableFromFunctionCall = _{ "Many Bothans died to bring us this information." }
 EndAssignVariable = _{ "The garbage will do." }
 SetValue = _{ "I am your father." }
 CallFunction = _{ "I have a bad feeling about this." }
-Not = { "Always with you what cannot be done." }
-Add = _{ "This will make a fine addition to my collection." }
+Not = { "Always with you it cannot be done." }
+Add = _{ "Your lightsabers will make a fine addition to my collection." }
 Subtract = _{ "Proceed with the countdown." }
 Multiply = _{ "There's too many of them!" }
-Divide = _{ "Not to worry, at least we are flying half a ship." }
+Divide = _{ "Not to worry, we are still flying half a ship." }
 Exponent = _{ "Unlimited power!" }
 Modulus = _{ "Never tell me the odds!" }
-Equal = _{ "You're a Jedi too, nice to meet you." }
-GreaterThan = _{ "There is always a bigger fish." }
-LessThan = _{ "Impressive. Most impressive." }
-Or = _{ "As you wish." }
-And = _{ "There is another." }
-DeclareFloat = _{ "Yoda, you seek Yoda." }
-DeclareString = _{ "Size matters not." }
-DeclareBool = _{ "I am the senate!" }
-SetInitalValue = _{ "Whoosa are youssa?" }
+Equal = _{ "I am a Jedi, like my father before me." }
+GreaterThan = _{ "Impressive. Most impressive." }
+LessThan = _{ "There's always a bigger fish." }
+Or = _{ "There is another." }
+And = _{ "As you wish." }
+DeclareFloat = _{ "Size matters not." }
+DeclareString = _{ "Yoda. You seek Yoda." }
+DeclareBool = _{ "I am the Senate!" }
+SetInitalValue = _{ "Who, mesa?" }
 Noop = _{ "Move along. Move along." }
 While = _{ "Here we go again." }
 EndWhile = _{ "Let the past die." }
-If = _{ "Do or do not." }
+If = _{ "Do, or do not. There is no try." }
 Else = _{ "These aren't the droids you're looking for." }
 EndIf = _{ "You have failed me for the last time." }
 PassArgument = _{ "I'll try spinning, that's a good trick." }
-For = _{ "For a thousand generations the Jedi were guardians of the republic." }
+For = _{ "For over a thousand generations." }
 ForStart = _{ "Let the Wookiee win." }
-EndFor = _{ "You cannot escape your destiny." }
-ReadFloat = _{ "Looking, found someone I would say you have." }
-ReadString = _{ "Now this is pod racing." }
+EndFor = _{ "It is clear to me now the Republic no longer functions." }
+ReadFloat = _{ "Now this is podracing!" }
+ReadString = _{ "Looking? Found someone, you have, I would say." }
 ReadBoolean = _{ "I hope you know what you're doing." }
