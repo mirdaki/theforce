@@ -669,7 +669,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "true");
+        assert_eq!(output, "From a certain point of view.");
     }
 
     #[test]
@@ -742,7 +742,10 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "falsefalsetrue");
+        assert_eq!(
+            output,
+            "That's impossible!That's impossible!From a certain point of view."
+        );
     }
 
     #[test]
@@ -783,7 +786,10 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "truetruefalse");
+        assert_eq!(
+            output,
+            "From a certain point of view.From a certain point of view.That's impossible!"
+        );
     }
 
     #[test]
@@ -919,7 +925,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "false");
+        assert_eq!(output, "That's impossible!");
     }
 
     #[test]
@@ -964,7 +970,7 @@ mod tests {
         assert!(result.is_ok());
 
         let output = String::from_utf8(output).expect("Not UTF-8");
-        assert_eq!(output, "false");
+        assert_eq!(output, "That's impossible!");
     }
 
     #[test]

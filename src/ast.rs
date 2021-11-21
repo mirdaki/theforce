@@ -51,7 +51,8 @@ impl fmt::Display for Node {
         match &self {
             Node::Float(n) => write!(f, "{}", n),
             Node::String(s) => write!(f, "{}", s),
-            Node::Boolean(b) => write!(f, "{}", b),
+            Node::Boolean(true) => write!(f, "From a certain point of view."),
+            Node::Boolean(false) => write!(f, "That's impossible!"),
             _ => unreachable!(),
         }
     }
