@@ -77,7 +77,7 @@ where
     }
 
     /// Returns a Some of bool indicating if the variable is new (true) or an existing one (false).
-    /// Used to prevent varaibles from being re-declared.
+    /// Used to prevent variables from being re-declared.
     fn set_variable(&mut self, variable_name: &str, variable_value: &Node) -> Result<bool, String> {
         let variable_result = match self.stack.last_mut() {
             Some(frame) => Some(
