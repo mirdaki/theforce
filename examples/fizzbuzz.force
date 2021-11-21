@@ -1,22 +1,22 @@
 Do it!
     <(-.-)> Declare varaibles, you must.
-    Yoda, you seek Yoda. limit
-    Whoosa are youssa? 100
+    Size matters not. limit
+    Who, mesa? 100
 
-    Yoda, you seek Yoda. currentVal
-    Whoosa are youssa? 0
+    Size matters not. currentVal
+    Who, mesa? 0
 
-    I am the senate! loop
-    Whoosa are youssa? From a certain point of view.
+    I am the Senate! loop
+    Who, mesa? From a certain point of view.
 
-    I am the senate! dividesThree
-    Whoosa are youssa? No, that's not true. That's impossible!
+    I am the Senate! dividesThree
+    Who, mesa? That's impossible!
 
-    I am the senate! dividesFive
-    Whoosa are youssa? No, that's not true. That's impossible!
+    I am the Senate! dividesFive
+    Who, mesa? That's impossible!
 
-    I am the senate! otherwise
-    Whoosa are youssa? No, that's not true. That's impossible!
+    I am the Senate! otherwise
+    Who, mesa? That's impossible!
 
     Here we go again. loop
 
@@ -24,44 +24,44 @@ Do it!
         What a piece of junk! dividesThree
             I am your father. currentVal
             Never tell me the odds! 3
-            You're a Jedi too, nice to meet you. 0
+            I am a Jedi, like my father before me. 0
         The garbage will do.
 
         What a piece of junk! dividesFive
             I am your father. currentVal
             Never tell me the odds! 5
-            You're a Jedi too, nice to meet you. 0
+            I am a Jedi, like my father before me. 0
         The garbage will do.
 
         What a piece of junk! otherwise
             I am your father. dividesThree
-            As you wish. dividesFive
-            Always with you what cannot be done.
+            There is another. dividesFive
+            Always with you it cannot be done.
         The garbage will do.
 
         <(-.-)> Fizz. Buzz. An interviewer craves these things.
-        Do or do not. dividesThree
-            The Sacred Texts! "Fizz"
+        Do, or do not. There is no try. dividesThree
+            The Sacred Jedi Texts! "Fizz"
         You have failed me for the last time.
 
-        Do or do not. dividesFive
-            The Sacred Texts! "Buzz"
+        Do, or do not. There is no try. dividesFive
+            The Sacred Jedi Texts! "Buzz"
         You have failed me for the last time.
 
-        Do or do not. otherwise
-            The Sacred Texts! currentVal
+        Do, or do not. There is no try. otherwise
+            The Sacred Jedi Texts! currentVal
         You have failed me for the last time.
 
-        The Sacred Texts! "\n"
+        The Sacred Jedi Texts! "\n"
 
         What a piece of junk! loop
             I am your father. limit
-            There is always a bigger fish. currentVal
+            Impressive. Most impressive. currentVal
         The garbage will do.
 
         What a piece of junk! currentVal
             I am your father. currentVal
-            This will make a fine addition to my collection. 1
+            Your lightsabers will make a fine addition to my collection. 1
         The garbage will do.
     Let the past die.
 May The Force be with you.

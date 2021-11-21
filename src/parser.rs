@@ -290,7 +290,7 @@ mod tests {
     fn hello_there() {
         let source = r#"
         Do it!
-            The Sacred Texts! "Hello there"
+            The Sacred Jedi Texts! "Hello there"
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -308,10 +308,10 @@ mod tests {
     fn variable() {
         let source = r#"
         Do it!
-            Yoda, you seek Yoda. jawa
-            Whoosa are youssa? -13.2
+            Size matters not. jawa
+            Who, mesa? -13.2
 
-            The Sacred Texts! jawa
+            The Sacred Jedi Texts! jawa
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -327,10 +327,10 @@ mod tests {
 
         let source = r#"
         Do it!
-            Size matters not. ewok
-            Whoosa are youssa? "Nub Nub"
+            Yoda. You seek Yoda. ewok
+            Who, mesa? "Nub Nub"
 
-            The Sacred Texts! ewok
+            The Sacred Jedi Texts! ewok
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -349,10 +349,10 @@ mod tests {
 
         let source = r#"
         Do it!
-            I am the senate! darkSide
-            Whoosa are youssa? From a certain point of view.
+            I am the Senate! darkSide
+            Who, mesa? From a certain point of view.
 
-            The Sacred Texts! darkSide
+            The Sacred Jedi Texts! darkSide
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -371,20 +371,20 @@ mod tests {
     fn math() {
         let source = r#"
         Do it!
-            Yoda, you seek Yoda. porg
-            Whoosa are youssa? 4
+            Size matters not. porg
+            Who, mesa? 4
 
             What a piece of junk! porg
                 I am your father. porg
-                This will make a fine addition to my collection. 2.0
+                Your lightsabers will make a fine addition to my collection. 2.0
                 Proceed with the countdown. 1
                 There's too many of them! 3
-                Not to worry, at least we are flying half a ship. 5
+                Not to worry, we are still flying half a ship. 5
                 Unlimited power! 2
                 Never tell me the odds! 10
             The garbage will do.
 
-            The Sacred Texts! porg
+            The Sacred Jedi Texts! porg
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -415,38 +415,38 @@ mod tests {
     fn equality() {
         let source = r#"
         Do it!
-            Yoda, you seek Yoda. anakin
-            Whoosa are youssa? 27700
+            Size matters not. anakin
+            Who, mesa? 27700
 
-            Yoda, you seek Yoda. luke
-            Whoosa are youssa? 14500
+            Size matters not. luke
+            Who, mesa? 14500
 
-            Yoda, you seek Yoda. leia
-            Whoosa are youssa? 14500
+            Size matters not. leia
+            Who, mesa? 14500
 
-            I am the senate! midichlorian
-            Whoosa are youssa? No, that's not true. That's impossible!
+            I am the Senate! midichlorian
+            Who, mesa? That's impossible!
 
             What a piece of junk! midichlorian
                 I am your father. luke
-                There is always a bigger fish. anakin
+                Impressive. Most impressive. anakin
             The garbage will do.
 
-            The Sacred Texts! midichlorian
+            The Sacred Jedi Texts! midichlorian
 
             What a piece of junk! midichlorian
                 I am your father. anakin
-                Impressive. Most impressive. leia
+                There's always a bigger fish. leia
             The garbage will do.
 
-            The Sacred Texts! midichlorian
+            The Sacred Jedi Texts! midichlorian
 
             What a piece of junk! midichlorian
                 I am your father. leia
-                You're a Jedi too, nice to meet you. luke
+                I am a Jedi, like my father before me. luke
             The garbage will do.
 
-            The Sacred Texts! midichlorian
+            The Sacred Jedi Texts! midichlorian
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -494,35 +494,35 @@ mod tests {
     fn logic() {
         let source = r#"
         Do it!
-            I am the senate! lightside
-            Whoosa are youssa? From a certain point of view.
+            I am the Senate! lightside
+            Who, mesa? From a certain point of view.
 
-            I am the senate! darkside
-            Whoosa are youssa? No, that's not true. That's impossible!
+            I am the Senate! darkside
+            Who, mesa? That's impossible!
 
-            I am the senate! revan
-            Whoosa are youssa? No, that's not true. That's impossible!
+            I am the Senate! revan
+            Who, mesa? That's impossible!
 
             What a piece of junk! revan
                 I am your father. lightside
-                As you wish. darkside
+                There is another. darkside
             The garbage will do.
 
-            The Sacred Texts! revan
+            The Sacred Jedi Texts! revan
 
             What a piece of junk! revan
                 I am your father. revan
-                There is another. lightside
+                As you wish. lightside
             The garbage will do.
 
-            The Sacred Texts! revan
+            The Sacred Jedi Texts! revan
 
             What a piece of junk! revan
                 I am your father. revan
-                Always with you what cannot be done.
+                Always with you it cannot be done.
             The garbage will do.
 
-            The Sacred Texts! revan
+            The Sacred Jedi Texts! revan
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -566,11 +566,11 @@ mod tests {
     fn while_loop() {
         let source = r#"
         Do it!
-            Yoda, you seek Yoda. deathStars
-            Whoosa are youssa? 3
+            Size matters not. deathStars
+            Who, mesa? 3
 
             Here we go again. deathStars
-                The Sacred Texts! deathStars
+                The Sacred Jedi Texts! deathStars
 
                 What a piece of junk! deathStars
                     I am your father. deathStars
@@ -608,13 +608,13 @@ mod tests {
     fn for_loop() {
         let source = r#"
         Do it!
-            Yoda, you seek Yoda. deadYounglings
-            Whoosa are youssa? 0
+            Size matters not. deadYounglings
+            Who, mesa? 0
 
-            For a thousand generations the Jedi were guardians of the republic. 10
+            For over a thousand generations. 10
             Let the Wookiee win. deadYounglings
-                The Sacred Texts! deadYounglings
-            You cannot escape your destiny.
+                The Sacred Jedi Texts! deadYounglings
+            It is clear to me now the Republic no longer functions.
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -639,10 +639,10 @@ mod tests {
     fn if_else() {
         let source = r#"
         Do it!
-            Do or do not. From a certain point of view.
-                The Sacred Texts! "Do"
+            Do, or do not. There is no try. From a certain point of view.
+                The Sacred Jedi Texts! "Do"
             These aren't the droids you're looking for.
-                The Sacred Texts! "Don't"
+                The Sacred Jedi Texts! "Don't"
             You have failed me for the last time.
         May The Force be with you.
         "#;
@@ -663,11 +663,12 @@ mod tests {
     fn functions() {
         let source = r#"
         This is where the fun begins. NameTheSystem
-        Now that's a name I have not heard in a long time, a long time. planet
-            The Sacred Texts! "Goodbye"
-            The Sacred Texts! planet
-            The Sacred Texts! "Deathstar noise"
-        It is clear to me the Republic no longer functions.
+        Now, that's a name I've not heard in a long time. A long time. planet
+        It's a trap!
+        The Sacred Jedi Texts! "Goodbye"
+            The Sacred Jedi Texts! planet
+            The Sacred Jedi Texts! "Deathstar noise"
+        You cannot escape your destiny.
 
         Do it!
             I have a bad feeling about this. NameTheSystem
@@ -699,30 +700,29 @@ mod tests {
 
         let source = r#"
         This is where the fun begins. TheOdds
-        Now that's a name I have not heard in a long time, a long time. odds
-        It's a trap!
-            I am the senate! survive
-            Whoosa are youssa? No, that's not true. That's impossible!
+        Now, that's a name I've not heard in a long time. A long time. odds
+            I am the Senate! survive
+            Who, mesa? That's impossible!
 
             What a piece of junk! survive
                 I am your father. odds
                 Never tell me the odds! 3720
-                You're a Jedi too, nice to meet you. 0
+                I am a Jedi, like my father before me. 0
             The garbage will do.
 
-            You're all clear kid, let's blow this thing and go home. survive
-        It is clear to me the Republic no longer functions.
+            You're all clear, kid. Now let's blow this thing and go home. survive
+        You cannot escape your destiny.
 
         Do it!
-            I am the senate! survive
-            Whoosa are youssa? No, that's not true. That's impossible!
+            I am the Senate! survive
+            Who, mesa? That's impossible!
 
             Many Bothans died to bring us this information. survive
                 I have a bad feeling about this. TheOdds
                 I'll try spinning, that's a good trick. 52
             The garbage will do.
 
-            The Sacred Texts! survive
+            The Sacred Jedi Texts! survive
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -771,12 +771,12 @@ mod tests {
     fn input() {
         let source = r#"
         Do it!
-            Yoda, you seek Yoda. jawa
-            Whoosa are youssa? 0.0
+            Size matters not. jawa
+            Who, mesa? 0.0
 
-            Looking, found someone I would say you have. jawa
+            Now this is podracing! jawa
 
-            The Sacred Texts! jawa
+            The Sacred Jedi Texts! jawa
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -793,12 +793,12 @@ mod tests {
 
         let source = r#"
         Do it!
-            Size matters not. ewok
-            Whoosa are youssa? ""
+            Yoda. You seek Yoda. ewok
+            Who, mesa? ""
 
-            Now this is pod racing. ewok
+            Looking? Found someone, you have, I would say. ewok
 
-            The Sacred Texts! ewok
+            The Sacred Jedi Texts! ewok
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -815,12 +815,12 @@ mod tests {
 
         let source = r#"
         Do it!
-            I am the senate! darkSide
-            Whoosa are youssa? From a certain point of view.
+            I am the Senate! darkSide
+            Who, mesa? From a certain point of view.
 
             I hope you know what you're doing. darkSide
 
-            The Sacred Texts! darkSide
+            The Sacred Jedi Texts! darkSide
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -879,8 +879,8 @@ mod tests {
     fn error_type() {
         let source = r#"
         Do it!
-            Yoda, you seek Yoda. binks
-            Whoosa are youssa? "Jar Jar"
+            Size matters not. binks
+            Who, mesa? "Jar Jar"
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -889,7 +889,7 @@ mod tests {
         let source = r#"
         Do it!
             Size matters not. holidaySpecial
-            Whoosa are youssa? From a certain point of view.
+            Who, mesa? From a certain point of view.
         May The Force be with you.
         "#;
         let ast = parse(source);
@@ -897,8 +897,8 @@ mod tests {
 
         let source = r#"
         Do it!
-            I am the senate! lifeDay
-            Whoosa are youssa? -12.9
+            I am the Senate! lifeDay
+            Who, mesa? -12.9
         May The Force be with you.
         "#;
         let ast = parse(source);
