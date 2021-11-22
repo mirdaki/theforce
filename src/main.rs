@@ -9,9 +9,9 @@ mod parser;
 mod compiler;
 
 fn main() -> Result<(), String> {
-    let config = cli::parse_arguments()?;
+    let args = cli::parse_arguments();
 
-    let source = cli::read_source(config)?;
+    let source = cli::read_source(args)?;
 
     let ast = parser::parse(source.as_str());
     interpreter::evaluate(ast.unwrap(), io::stdin().lock(), io::stdout())
