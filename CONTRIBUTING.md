@@ -10,7 +10,7 @@ Please read our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) to understand our commu
 
 Please check the [Issues][Issues] for current task. If you see something that you would like to help with, ask about helping in a comment and we'll assign it too you.
 
-Checkout the [DESIGN.md](DESIGN.md) file for a high level explanation of the project.
+Checkout the [introduction.md](docs/introduction.md) file for a high level explanation of the project.
 
 ### Report Bug 
 

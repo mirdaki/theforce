@@ -48,17 +48,17 @@ Statement = _{
 
 DeclareBooleanStatement = {
     DeclareBool ~ VariableName
-    ~ SetInitalValue ~ (Boolean | VariableName)
+    ~ SetInitialValue ~ (Boolean | VariableName)
 }
 
 DeclareFloatStatement = {
     DeclareFloat ~ VariableName
-    ~ SetInitalValue ~ (Float | VariableName)
+    ~ SetInitialValue ~ (Float | VariableName)
 }
 
 DeclareStringStatement = {
     DeclareString ~ VariableName
-    ~ SetInitalValue ~ (String | VariableName)
+    ~ SetInitialValue ~ (String | VariableName)
 }
 
 AssignStatement = {
@@ -182,7 +182,7 @@ AssignVariableFromFunctionCall = _{ "Many Bothans died to bring us this informat
 EndAssignVariable = _{ "The garbage will do." }
 SetValue = _{ "I am your father." }
 CallFunction = _{ "I have a bad feeling about this." }
-Not = { "Always with you it cannot be done." }
+Not = _{ "Always with you it cannot be done." }
 Add = _{ "Your lightsabers will make a fine addition to my collection." }
 Subtract = _{ "Proceed with the countdown." }
 Multiply = _{ "There's too many of them!" }
@@ -197,7 +197,7 @@ And = _{ "As you wish." }
 DeclareFloat = _{ "Size matters not." }
 DeclareString = _{ "Yoda. You seek Yoda." }
 DeclareBool = _{ "I am the Senate!" }
-SetInitalValue = _{ "Who, mesa?" }
+SetInitialValue = _{ "Who, mesa?" }
 Noop = _{ "Move along. Move along." }
 While = _{ "Here we go again." }
 EndWhile = _{ "Let the past die." }
