@@ -2,6 +2,12 @@
 name = "theforce"
 version = "0.1.0"
 edition = "2018"
+description = "A Star Wars inspired programming language."
+homepage = "https://github.com/mirdaki/theforce"
+repository = "https://github.com/mirdaki/theforce"
+license = "MIT"
+keywords = ["star-wars", "programming-language"]
+categories = ["compilers", "command-line-utilities"]
 
 [features]
 llvm = ["inkwell"]
@@ -10,3 +16,4 @@ llvm = ["inkwell"]
 inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "llvm10-0", optional = true }
 pest = "2.1.3"
 pest_derive = "2.1.0"
+clap = "2.33.3"
