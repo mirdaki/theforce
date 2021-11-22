@@ -14,6 +14,22 @@ May The Force be with you.
 
 To learn about using The Force, please look at the [introduction](docs/introduction.md). We also have some [examples](examples) of full programs you can use as reference.
 
+### Installing
+
+If you have [cargo](https://doc.rust-lang.org/cargo/):
+```bash
+cargo install theforce
+```
+
+Or download directly from our [releases](https://github.com/mirdaki/theforce/releases).
+
+### Usage
+
+Run a `.force` file:
+```bash
+theforce /path/to/file
+```
+
 ### Developing
 
 [Install Rust](https://www.rust-lang.org/tools/install). We also provide a [Dev Container](https://code.visualstudio.com/docs/remote/create-dev-container) if you would prefer to run it that way.
@@ -43,7 +59,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute to the proj
 
 ## License
 
-This project is dual-licensed under the MIT and Yoda License - see the [LICENSE.md](LICENSE.md) and [YODA-LICENSE.md](YODA-LICENSE.md) files for details.
+This project is dual-licensed under the MIT or Yoda License - see the [LICENSE.md](LICENSE.md) and [YODA-LICENSE.md](YODA-LICENSE.md) files for details.
 
 The Force is in no way affiliated with or endorsed by Lucasfilm Limited or any of its subsidiaries, employees, or associates. All Star Wars quotes and references in this project are copyrighted to Lucasfilm Limited. This project intends to use these strictly within the terms of fair use under United States copyright laws.
 

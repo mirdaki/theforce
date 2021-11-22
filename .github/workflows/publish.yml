@@ -1,0 +1,26 @@
+# Based on https://pratikpc.medium.com/publishing-crates-using-github-actions-165ee67780e1
+
+on:
+  release:
+    types: [created]
+
+name: Publish to Crates.io
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - run: cargo publish --token ${CRATES_TOKEN}
+        env:
+          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
