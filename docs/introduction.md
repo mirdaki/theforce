@@ -57,6 +57,7 @@ BeginMain
     Print "Hello there"
 EndMain
 
+
 <(-.-)> A comment, this is
 Do it!
     The Sacred Jedi Texts! "Hello there"
@@ -106,7 +107,7 @@ May The Force be with you.
 
 ### Read Input
 
-This example creates three variables of different types and reads a value from standard in, before printing that value and continuing on to the next variable.
+This example creates three variables of different types. For each variable, a value is read from standard in, assigned to that variable, then printed out. 
 
 ```force
 BeginMain
@@ -131,6 +132,7 @@ BeginMain
 
     Print darkSide
 EndMain
+
 
 Do it!
     Size matters not. jawa
@@ -347,7 +349,7 @@ May The Force be with you.
 
 ### While Loops
 
-This example creates a float and uses it as the flag in a while loop, where each loop it prints itself and is decremented. Note: While loops continue until the flag is `0` or `False`.
+This example creates a float and uses it as the condition in a while loop, where each loop it prints itself and is decremented. Note: While loops continue until the condition  is `0` or `False`.
 
 ```force
 BeginMain
@@ -356,6 +358,7 @@ BeginMain
 
     While deathStars 
         Print deathStars
+        
         AssignVariable deathStars
             SetValue deathStars
             Subtract 1

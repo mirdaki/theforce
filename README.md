@@ -2,13 +2,13 @@
 
 > The Force is a gateway to abilities many believe are unnatural...
 
+The Force is a Star Wars inspired programming language. All keywords are made up of quotes from the movies and it is fully armed and operational!
+
 ```force
 Do it!
     The Sacred Jedi Texts! "Hello there\n"
 May The Force be with you.
 ```
-
-The Force is a Star Wars inspired programming language. All keywords are made up of quotes from the movies and it is fully armed and operational!
 
 ## Getting Started
 
