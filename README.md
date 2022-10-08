@@ -1,5 +1,16 @@
 # The Force
 
+[![Latest Crates.io Version][Crates Image]][Crates Download]
+[![Latest Crates.io Version][Build Image]][Build]
+[![MIT license][License Image]][License]
+
+[Crates Image]: https://img.shields.io/crates/v/theforce?style=flat-square
+[Crates Download]: https://crates.io/crates/theforce
+[Build Image]: https://img.shields.io/github/workflow/status/mirdaki/theforce/Rust%20Check/main?style=flat-square
+[Build]: https://github.com/mirdaki/theforce/actions/workflows/rust-check.yml
+[License Image]: https://img.shields.io/crates/l/theforce?style=flat-square
+[License]: LICENSE.md
+
 > The Force is a gateway to abilities many believe are unnatural...
 
 The Force is a Star Wars inspired programming language. All keywords are made up of quotes from the movies and it is fully armed and operational!
