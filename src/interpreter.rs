@@ -561,14 +561,14 @@ where
 {
     match (&state.get_current()?, value) {
         (Node::String(string_x), Node::String(string_y)) => {
-            let new_current = Node::Boolean(bool_operation(&*string_x, &*string_y));
+            let new_current = Node::Boolean(bool_operation(string_x, string_y));
             state.set_current(new_current)?;
             Ok(())
         }
         (Node::String(string_x), Node::Variable(var_name)) => {
             let var_value = state.get_variable(var_name)?;
             if let Node::String(string_y) = var_value {
-                let new_current = Node::Boolean(bool_operation(&*string_x, &*string_y));
+                let new_current = Node::Boolean(bool_operation(string_x, string_y));
                 state.set_current(new_current)?;
                 Ok(())
             } else {

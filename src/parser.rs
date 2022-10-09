@@ -27,7 +27,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
         Rule::Main => {
             let pairs = pair.into_inner();
             let mut body = Vec::<Node>::new();
-            for pair in pairs.into_iter() {
+            for pair in pairs {
                 body.push(build_ast(pair));
             }
             Node::Main(body)
@@ -51,7 +51,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let identifier = pairs.next().unwrap().as_str();
             let value = build_ast(pairs.next().unwrap());
             let mut operations = Vec::<Node>::new();
-            for pair in pairs.into_iter() {
+            for pair in pairs {
                 operations.push(build_ast(pair));
             }
             Node::AssignVariable(identifier.to_string(), Box::new(value), operations)
@@ -102,7 +102,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let value = build_ast(pairs.next().unwrap());
             let identifier = pairs.next().unwrap().as_str();
             let mut statements = Vec::<Node>::new();
-            for pair in pairs.into_iter() {
+            for pair in pairs {
                 statements.push(build_ast(pair));
             }
             Node::For(
@@ -115,7 +115,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let mut pairs = pair.into_inner();
             let value = build_ast(pairs.next().unwrap());
             let mut statements = Vec::<Node>::new();
-            for pair in pairs.into_iter() {
+            for pair in pairs {
                 statements.push(build_ast(pair));
             }
             Node::While(Box::new(value), statements)
@@ -125,9 +125,9 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
             let value = build_ast(pairs.next().unwrap());
             let mut if_statements = Vec::<Node>::new();
             let mut else_statements = Vec::<Node>::new();
-            for pair in pairs.into_iter() {
+            for pair in pairs {
                 if pair.as_rule() == Rule::ElseClause {
-                    for pair in pair.into_inner().into_iter() {
+                    for pair in pair.into_inner() {
                         else_statements.push(build_ast(pair));
                     }
                     break;
@@ -227,7 +227,7 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
         Rule::String => {
             let pairs = pair.into_inner();
             let mut string = "".to_string();
-            for pair in pairs.into_iter() {
+            for pair in pairs {
                 string.push_str(build_string(pair).as_str());
             }
             Node::String(string)
@@ -263,7 +263,7 @@ fn build_string(pair: pest::iterators::Pair<Rule>) -> String {
         Rule::Inner => {
             let pairs = pair.into_inner();
             let mut string = "".to_string();
-            for pair in pairs.into_iter() {
+            for pair in pairs {
                 string.push_str(build_string(pair).as_str());
             }
             string
