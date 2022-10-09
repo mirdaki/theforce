@@ -2,7 +2,7 @@
 
 # [Choice] Debian OS version (use bullseye on local arm64/Apple Silicon): buster, bullseye
 ARG VARIANT="buster"
-FROM mcr.microsoft.com/vscode/devcontainers/rust:0-${VARIANT}
+FROM mcr.microsoft.com/devcontainers/rust:${VARIANT}
 
 # Add LLVM Dependecies
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
