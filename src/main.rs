@@ -13,5 +13,9 @@ fn main() -> Result<(), String> {
     let source = cli::read_source(args)?;
 
     let ast = parser::parse(source.as_str());
-    interpreter::evaluate(ast.unwrap(), io::stdin().lock(), io::stdout())
+
+    match ast {
+        Ok(t) => interpreter::evaluate(t, io::stdin().lock(), io::stdout()),
+        Err(e) => Err(format!("Error encountered while parsing: {}", e).to_string()),
+    }
 }
