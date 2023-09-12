@@ -18,6 +18,13 @@ pub fn parse_arguments() -> ArgMatches<'static> {
                 .required(true)
                 .index(1),
         )
+        .arg(
+            Arg::with_name("parse_error")
+            .long("ERROR_AFTER_PARSE")
+            .help("Indicates to error before execution if specified.")
+            .required(false)
+            .index(2),
+        )
         .get_matches()
 }
 
