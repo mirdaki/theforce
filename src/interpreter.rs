@@ -345,9 +345,9 @@ where
                 _ => Err("Return not a value".to_string()),
             }
         }
-        Node::ReadBoolean(variable) => read_value(&**variable, Node::Boolean, state),
-        Node::ReadFloat(variable) => read_value(&**variable, Node::Float, state),
-        Node::ReadString(variable) => read_value(&**variable, Node::String, state),
+        Node::ReadBoolean(variable) => read_value(variable, Node::Boolean, state),
+        Node::ReadFloat(variable) => read_value(variable, Node::Float, state),
+        Node::ReadString(variable) => read_value(variable, Node::String, state),
         Node::String(_) => state.set_current(ast.clone()),
         // Taken care of by the assign variable
         Node::Unary(_) => unreachable!(),

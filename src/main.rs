@@ -16,6 +16,6 @@ fn main() -> Result<(), String> {
 
     match ast {
         Ok(t) => interpreter::evaluate(t, io::stdin().lock(), io::stdout()),
-        Err(e) => Err(format!("Error encountered while parsing: {}", e).to_string()),
+        Err(e) => Err(format!("Error encountered while parsing: {}", e)),
     }
 }
