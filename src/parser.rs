@@ -9,7 +9,7 @@ use crate::ast::{BinaryOperation, Node, UnaryOperation};
 #[grammar = "grammar.pest"]
 struct ForceParser;
 
-pub fn parse(source: &str) -> Result<Vec<Node>, pest::error::Error<Rule>> {
+pub fn parse(source: &str) -> Result<Vec<Node>, Box<pest::error::Error<Rule>>> {
     let mut ast = vec![];
     let pairs = ForceParser::parse(Rule::Program, source)?;
     for pair in pairs {
