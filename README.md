@@ -6,7 +6,7 @@
 
 [Crates Image]: https://img.shields.io/crates/v/theforce?style=flat-square
 [Crates Download]: https://crates.io/crates/theforce
-[Build Image]: https://img.shields.io/github/workflow/status/mirdaki/theforce/Rust%20Check/main?style=flat-square
+[Build Image]: https://img.shields.io/github/actions/workflow/status/mirdaki/theforce/rust-check.yml?branch=main?style=flat-square
 [Build]: https://github.com/mirdaki/theforce/actions/workflows/rust-check.yml
 [License Image]: https://img.shields.io/crates/l/theforce?style=flat-square
 [License]: LICENSE.md
