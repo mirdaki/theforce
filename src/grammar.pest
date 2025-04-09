@@ -152,7 +152,9 @@ FunctionName = { Identifier }
 
 Identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC)* }
 
-Float = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
+NormalFloat = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
+EpisodeFloat = @{ "IX" | "VIII" | "VII" | "VI" | "V" | "IV" | "III" | "II" | "I" }
+Float = { NormalFloat | EpisodeFloat }
 
 Boolean = { True | False }
 

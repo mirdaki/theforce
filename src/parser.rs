@@ -221,7 +221,19 @@ fn build_ast(pair: pest::iterators::Pair<Rule>) -> Node {
         }
         Rule::Float => {
             let float = pair.as_str();
-            let float = float.parse::<f32>().unwrap();
+            let float = match float {
+                "IX" => 9.0,
+                "VIII" => 8.0,
+                "VII" => 7.0,
+                "VI" => 6.0,
+                "V" => 5.0,
+                "IV" => 4.0,
+                "III" => 3.0,
+                "II" => 2.0,
+                "I" => 1.0,
+                _ => float.parse::<f32>().unwrap(),
+            };
+
             Node::Float(float)
         }
         Rule::String => {
