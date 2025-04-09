@@ -394,6 +394,12 @@ mod tests {
                 Not to worry, we are still flying half a ship. 5
                 Unlimited power! 2
                 Never tell me the odds! 10
+                Your lightsabers will make a fine addition to my collection. V
+                Proceed with the countdown. II
+                There's too many of them! IX
+                Not to worry, we are still flying half a ship. IV
+                Unlimited power! III
+                Never tell me the odds! I
             The garbage will do.
 
             The Sacred Jedi Texts! porg
@@ -416,6 +422,12 @@ mod tests {
                         Node::Binary(BinaryOperation::Divide, Box::new(Node::Float(5.0))),
                         Node::Binary(BinaryOperation::Exponent, Box::new(Node::Float(2.0))),
                         Node::Binary(BinaryOperation::Modulus, Box::new(Node::Float(10.0))),
+                        Node::Binary(BinaryOperation::Add, Box::new(Node::Float(5.0))),
+                        Node::Binary(BinaryOperation::Subtract, Box::new(Node::Float(2.0))),
+                        Node::Binary(BinaryOperation::Multiply, Box::new(Node::Float(9.0))),
+                        Node::Binary(BinaryOperation::Divide, Box::new(Node::Float(4.0))),
+                        Node::Binary(BinaryOperation::Exponent, Box::new(Node::Float(3.0))),
+                        Node::Binary(BinaryOperation::Modulus, Box::new(Node::Float(1.0))),
                     )
                 ),
                 Node::Print(Box::new(Node::Variable("porg".to_string()))),
