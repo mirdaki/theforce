@@ -20,7 +20,7 @@ The Force supports these programing language constructs:
 - Noop
 
 The Force supports three types:
-- Floats (1 - 9 can alternatively be represented by roman numerals: I, II, III, IV, V, VI, VII, VIII, IX)
+- Floats (1 - 9 can alternatively be represented by roman numerals: `I`, `II`, `III`, `IV`, `V`, `VI`, `VII`, `VIII`, `IX`)
 - Booleans (which are represented as Star Wars quotes instead of `True` or `False`)
 - Strings
 
