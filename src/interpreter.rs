@@ -242,7 +242,7 @@ where
             let max_value = match **max {
                 Node::Float(max) => max,
                 Node::Variable(ref max_var) => {
-                    evaluate_node(&state.get_variable(&max_var)?.clone(), state)?;
+                    evaluate_node(&state.get_variable(max_var)?.clone(), state)?;
                     if let Node::Float(max) = state.get_current()?.clone() {
                         max
                     } else {
