@@ -239,16 +239,23 @@ where
         Node::Float(_) => state.set_current(ast.clone()),
         Node::For(max, flag, statements) => {
             // Validate params
-            let max_value = if let Node::Float(max) = **max {
-                max
-            } else {
-                return Err("For max not float".to_string());
+            let max_value = match **max {
+                Node::Float(max) => max,
+                Node::Variable(ref max_var) => {
+                    evaluate_node(&state.get_variable(&max_var)?.clone(), state)?;
+                    if let Node::Float(max) = state.get_current()?.clone() {
+                        max
+                    } else {
+                        return Err("For max variable not a float".to_string());
+                    }
+                }
+                _ => return Err("For max not a float".to_string()),
             };
 
             let flag_var_name = if let Node::Variable(ref var_name) = **flag {
                 var_name
             } else {
-                return Err("For flag not variable".to_string());
+                return Err("For flag not a variable".to_string());
             };
 
             // For evaluation check
