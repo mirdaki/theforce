@@ -848,6 +848,26 @@ mod tests {
 
         let output = String::from_utf8(output).expect("Not UTF-8");
         assert_eq!(output, "0123456789");
+
+        // For loop with variable
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("deadYounglings".to_string(), Box::new(Node::Float(0.0))),
+            Node::DeclareFloat("lightsaberSwings".to_string(), Box::new(Node::Float(10.0))),
+            Node::For(
+                Box::new(Node::Variable("lightsaberSwings".to_string())),
+                Box::new(Node::Variable("deadYounglings".to_string())),
+                vec![Node::Print(Box::new(Node::Variable(
+                    "deadYounglings".to_string(),
+                )))],
+            ),
+        ])];
+
+        let result = evaluate(ast, input.lock(), &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "0123456789");
     }
 
     #[test]
