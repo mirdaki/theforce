@@ -239,16 +239,23 @@ where
         Node::Float(_) => state.set_current(ast.clone()),
         Node::For(max, flag, statements) => {
             // Validate params
-            let max_value = if let Node::Float(max) = **max {
-                max
-            } else {
-                return Err("For max not float".to_string());
+            let max_value = match **max {
+                Node::Float(max) => max,
+                Node::Variable(ref max_var) => {
+                    evaluate_node(&state.get_variable(max_var)?.clone(), state)?;
+                    if let Node::Float(max) = state.get_current()?.clone() {
+                        max
+                    } else {
+                        return Err("For max variable not a float".to_string());
+                    }
+                }
+                _ => return Err("For max not a float".to_string()),
             };
 
             let flag_var_name = if let Node::Variable(ref var_name) = **flag {
                 var_name
             } else {
-                return Err("For flag not variable".to_string());
+                return Err("For flag not a variable".to_string());
             };
 
             // For evaluation check
@@ -829,6 +836,26 @@ mod tests {
             Node::DeclareFloat("deadYounglings".to_string(), Box::new(Node::Float(0.0))),
             Node::For(
                 Box::new(Node::Float(10.0)),
+                Box::new(Node::Variable("deadYounglings".to_string())),
+                vec![Node::Print(Box::new(Node::Variable(
+                    "deadYounglings".to_string(),
+                )))],
+            ),
+        ])];
+
+        let result = evaluate(ast, input.lock(), &mut output);
+        assert!(result.is_ok());
+
+        let output = String::from_utf8(output).expect("Not UTF-8");
+        assert_eq!(output, "0123456789");
+
+        // For loop with variable
+        let mut output = Vec::new();
+        let ast = vec![Node::Main(vec![
+            Node::DeclareFloat("deadYounglings".to_string(), Box::new(Node::Float(0.0))),
+            Node::DeclareFloat("lightsaberSwings".to_string(), Box::new(Node::Float(10.0))),
+            Node::For(
+                Box::new(Node::Variable("lightsaberSwings".to_string())),
                 Box::new(Node::Variable("deadYounglings".to_string())),
                 vec![Node::Print(Box::new(Node::Variable(
                     "deadYounglings".to_string(),

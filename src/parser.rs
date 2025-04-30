@@ -657,6 +657,39 @@ mod tests {
                 )
             ))]
         );
+
+        // For loop with variable
+        let source = r#"
+        Do it!
+            Size matters not. deadYounglings
+            Who, mesa? 0
+
+            Size matters not. lightsaberSwings
+            Who, mesa? 10
+
+            For over a thousand generations. lightsaberSwings
+            Let the Wookiee win. deadYounglings
+                The Sacred Jedi Texts! deadYounglings
+            It is clear to me now the Republic no longer functions.
+        May The Force be with you.
+        "#;
+        let ast = parse(source);
+        assert!(ast.is_ok());
+
+        assert_eq!(
+            ast.unwrap(),
+            vec![Node::Main(vec!(
+                Node::DeclareFloat("deadYounglings".to_string(), Box::new(Node::Float(0.0))),
+                Node::DeclareFloat("lightsaberSwings".to_string(), Box::new(Node::Float(10.0))),
+                Node::For(
+                    Box::new(Node::Variable("lightsaberSwings".to_string())),
+                    Box::new(Node::Variable("deadYounglings".to_string())),
+                    vec!(Node::Print(Box::new(Node::Variable(
+                        "deadYounglings".to_string()
+                    )))),
+                )
+            ))]
+        );
     }
 
     #[test]
